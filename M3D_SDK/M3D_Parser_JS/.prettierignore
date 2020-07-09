@@ -1,0 +1,3 @@
+# .prettierignore 文件配置
+
+/node_modules
