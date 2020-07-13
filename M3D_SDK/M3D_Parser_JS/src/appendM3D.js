@@ -97,7 +97,7 @@ function loadM3DByFile(viewer, options) {
  * @param {Object} viewer 视图对象
  * @param {String} url 服务地址，可以使用文件服务地址，或者igs服务地址
  * @param {String} type 服务类型，'igs' 为igs服务地址，'file' 为文件服务地址
- * @param {Object} options {@link https://cesium.com/docs/cesiumjs-ref-doc/Cesium3DTileset.html?classFilter=Cesium}
+ * @param {Object} options {@link https://cesium.com/docs/cesiumjs-ref-doc/Cesium3DTileset.html}
  * @example
  * // 使用文件服务
  * let url = './data/景观_建筑模型/景观_建筑模型.mcj';
