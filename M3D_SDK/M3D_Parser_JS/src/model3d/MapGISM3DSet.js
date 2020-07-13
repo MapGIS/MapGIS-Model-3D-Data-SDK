@@ -1,4 +1,4 @@
-import { CesiumZondy } from './core/Base';
+import { CesiumZondy } from '../core/Base';
 import MapGISM3D from './MapGISM3D';
 
 const scratchPositionNormal = new Cesium.Cartesian3();
@@ -372,7 +372,9 @@ function updateTileDebugLabels(tileset, frameState) {
 
     if (tileset.debugPickedTileLabelOnly) {
         if (Cesium.defined(tileset.debugPickedTile)) {
-            const position = Cesium.defined(tileset.debugPickPosition) ? tileset.debugPickPosition : computeTileLabelPosition(tileset.debugPickedTile);
+            const position = Cesium.defined(tileset.debugPickPosition)
+                ? tileset.debugPickPosition
+                : computeTileLabelPosition(tileset.debugPickedTile);
             const label = addTileDebugLabel(tileset.debugPickedTile, tileset, position);
             label.pixelOffset = new Cesium.Cartesian2(15, -15); // Offset to avoid picking the label.
         }
@@ -406,7 +408,11 @@ function updateTiles(tilesetParam, frameState, isRender) {
     let i;
     let tile;
 
-    const bivariateVisibilityTest = tileset._skipLevelOfDetail && tileset._hasMixedContent && frameState.context.stencilBuffer && selectedLength > 0;
+    const bivariateVisibilityTest =
+        tileset._skipLevelOfDetail &&
+        tileset._hasMixedContent &&
+        frameState.context.stencilBuffer &&
+        selectedLength > 0;
 
     tileset._backfaceCommands.length = 0;
 
@@ -499,12 +505,22 @@ function updateTiles(tilesetParam, frameState, isRender) {
     statistics.numberOfCommands = addedCommandsLength;
 
     // Only run EDL if simple attenuation is on
-    if (isRender && tileset.pointCloudShading.attenuation && tileset.pointCloudShading.eyeDomeLighting && addedCommandsLength > 0) {
+    if (
+        isRender &&
+        tileset.pointCloudShading.attenuation &&
+        tileset.pointCloudShading.eyeDomeLighting &&
+        addedCommandsLength > 0
+    ) {
         tileset._pointCloudEyeDomeLighting.update(frameState, numberOfInitialCommands, tileset.pointCloudShading);
     }
 
     if (isRender) {
-        if (tileset.debugShowGeometricError || tileset.debugShowRenderingStatistics || tileset.debugShowMemoryUsage || tileset.debugShowUrl) {
+        if (
+            tileset.debugShowGeometricError ||
+            tileset.debugShowRenderingStatistics ||
+            tileset.debugShowMemoryUsage ||
+            tileset.debugShowUrl
+        ) {
             if (!Cesium.defined(tileset._tileDebugLabels)) {
                 tileset._tileDebugLabels = new Cesium.LabelCollection();
             }
@@ -529,7 +545,9 @@ function raiseLoadProgressEvent(tilesetParam, frameState) {
 
     Cesium.Cesium3DTilesetStatistics.clone(statistics, statisticsLast);
 
-    const progressChanged = numberOfPendingRequests !== lastNumberOfPendingRequest || numberOfTilesProcessing !== lastNumberOfTilesProcessing;
+    const progressChanged =
+        numberOfPendingRequests !== lastNumberOfPendingRequest ||
+        numberOfTilesProcessing !== lastNumberOfTilesProcessing;
 
     if (progressChanged) {
         frameState.afterRender.push(() => {
@@ -537,7 +555,10 @@ function raiseLoadProgressEvent(tilesetParam, frameState) {
         });
     }
 
-    tileset._tilesLoaded = statistics.numberOfPendingRequests === 0 && statistics.numberOfTilesProcessing === 0 && statistics.numberOfAttemptedRequests === 0;
+    tileset._tilesLoaded =
+        statistics.numberOfPendingRequests === 0 &&
+        statistics.numberOfTilesProcessing === 0 &&
+        statistics.numberOfAttemptedRequests === 0;
 
     // Events are raised (added to the afterRender queue) here since promises
     // may resolve outside of the update loop that then raise events, e.g.,
@@ -686,7 +707,9 @@ export default class MapGISM3DSet {
 
         this._styleEngine = new Cesium.Cesium3DTileStyleEngine();
 
-        this._modelMatrix = Cesium.defined(optionsParam.modelMatrix) ? Cesium.Matrix4.clone(optionsParam.modelMatrix) : Cesium.Matrix4.clone(Cesium.Matrix4.IDENTITY);
+        this._modelMatrix = Cesium.defined(optionsParam.modelMatrix)
+            ? Cesium.Matrix4.clone(optionsParam.modelMatrix)
+            : Cesium.Matrix4.clone(Cesium.Matrix4.IDENTITY);
 
         this._statistics = new Cesium.Cesium3DTilesetStatistics();
         this._statisticsLast = new Cesium.Cesium3DTilesetStatistics();
@@ -726,7 +749,10 @@ export default class MapGISM3DSet {
          * @type {Number}
          * @default 60.0
          */
-        this.cullRequestsWhileMovingMultiplier = Cesium.defaultValue(optionsParam.cullRequestsWhileMovingMultiplier, 60.0);
+        this.cullRequestsWhileMovingMultiplier = Cesium.defaultValue(
+            optionsParam.cullRequestsWhileMovingMultiplier,
+            60.0
+        );
 
         /**
          * Optimization option. If between (0.0, 0.5], tiles at or above the screen space error for the reduced screen resolution of <code>progressiveResolutionHeightFraction*screenHeight</code> will be prioritized first. This can help get a quick layer of tiles down while full resolution tiles continue to load.
@@ -734,7 +760,11 @@ export default class MapGISM3DSet {
          * @type {Number}
          * @default 0.3
          */
-        this.progressiveResolutionHeightFraction = Cesium.Math.clamp(Cesium.defaultValue(optionsParam.progressiveResolutionHeightFraction, 0.3), 0.0, 0.5);
+        this.progressiveResolutionHeightFraction = Cesium.Math.clamp(
+            Cesium.defaultValue(optionsParam.progressiveResolutionHeightFraction, 0.3),
+            0.0,
+            0.5
+        );
 
         /**
          * Optimization option. Prefer loading of leaves first.
@@ -798,14 +828,20 @@ export default class MapGISM3DSet {
          */
         this.foveatedScreenSpaceError = Cesium.defaultValue(optionsParam.foveatedScreenSpaceError, true);
         this._foveatedConeSize = Cesium.defaultValue(optionsParam.foveatedConeSize, 0.1);
-        this._foveatedMinimumScreenSpaceErrorRelaxation = Cesium.defaultValue(optionsParam.foveatedMinimumScreenSpaceErrorRelaxation, 0.0);
+        this._foveatedMinimumScreenSpaceErrorRelaxation = Cesium.defaultValue(
+            optionsParam.foveatedMinimumScreenSpaceErrorRelaxation,
+            0.0
+        );
 
         /**
          * Gets a function that will update the foveated screen space error for a tile.
          *
          * @type {Cesium3DTileset~foveatedInterpolationCallback} A callback to control how much to raise the screen space error for tiles outside the foveated cone, interpolating between {@link Cesium3DTileset#foveatedMinimumScreenSpaceErrorRelaxation} and {@link Cesium3DTileset#maximumScreenSpaceError}.
          */
-        this.foveatedInterpolationCallback = Cesium.defaultValue(optionsParam.foveatedInterpolationCallback, Cesium.Math.lerp);
+        this.foveatedInterpolationCallback = Cesium.defaultValue(
+            optionsParam.foveatedInterpolationCallback,
+            Cesium.Math.lerp
+        );
 
         /**
          * Optimization option. Used when {@link Cesium3DTileset#foveatedScreenSpaceError} is true to control
@@ -1143,7 +1179,10 @@ export default class MapGISM3DSet {
          * @type {Boolean}
          * @default false
          */
-        this.immediatelyLoadDesiredLevelOfDetail = Cesium.defaultValue(optionsParam.immediatelyLoadDesiredLevelOfDetail, false);
+        this.immediatelyLoadDesiredLevelOfDetail = Cesium.defaultValue(
+            optionsParam.immediatelyLoadDesiredLevelOfDetail,
+            false
+        );
 
         /**
          * Determines whether siblings of visible tiles are always downloaded during traversal.
@@ -1395,7 +1434,9 @@ export default class MapGISM3DSet {
                 // hys
                 that._name = Cesium.defined(tilesetJson.asset.layerName) ? tilesetJson.asset.layerName : '';
                 that._guid = Cesium.defined(tilesetJson.asset.guid) ? tilesetJson.asset.guid : '';
-                const gltfUpAxis = Cesium.defined(tilesetJson.asset.gltfUpAxis) ? Cesium.Axis.fromName(tilesetJson.asset.gltfUpAxis) : Cesium.Axis.Y;
+                const gltfUpAxis = Cesium.defined(tilesetJson.asset.gltfUpAxis)
+                    ? Cesium.Axis.fromName(tilesetJson.asset.gltfUpAxis)
+                    : Cesium.Axis.Y;
                 const { asset } = tilesetJson;
                 that._asset = asset;
                 that._properties = tilesetJson.properties;
@@ -1420,15 +1461,23 @@ export default class MapGISM3DSet {
 
                 // Save the original, untransformed bounding volume position so we can apply
                 // the tile transform and model matrix at run time
-                const boundingVolume = that._root.createBoundingVolume(tilesetJson.root.boundingVolume, Cesium.Matrix4.IDENTITY);
+                const boundingVolume = that._root.createBoundingVolume(
+                    tilesetJson.root.boundingVolume,
+                    Cesium.Matrix4.IDENTITY
+                );
                 const clippingPlanesOrigin = boundingVolume.boundingSphere.center;
                 // If this origin is above the surface of the earth
                 // we want to apply an ENU orientation as our best guess of orientation.
                 // Otherwise, we assume it gets its position/orientation completely from the
                 // root tile transform and the tileset's model matrix
                 const originCartographic = that._ellipsoid.cartesianToCartographic(clippingPlanesOrigin);
-                if (Cesium.defined(originCartographic) && originCartographic.height > Cesium.ApproximateTerrainHeights._defaultMinTerrainHeight) {
-                    that._initialClippingPlanesOriginMatrix = Cesium.Transforms.eastNorthUpToFixedFrame(clippingPlanesOrigin);
+                if (
+                    Cesium.defined(originCartographic) &&
+                    originCartographic.height > Cesium.ApproximateTerrainHeights._defaultMinTerrainHeight
+                ) {
+                    that._initialClippingPlanesOriginMatrix = Cesium.Transforms.eastNorthUpToFixedFrame(
+                        clippingPlanesOrigin
+                    );
                 }
                 that._clippingPlanesOriginMatrix = Cesium.Matrix4.clone(that._initialClippingPlanesOriginMatrix);
                 that._readyPromise.resolve(that);
@@ -1455,7 +1504,9 @@ export default class MapGISM3DSet {
     get asset() {
         // >>includeStart('debug', pragmas.debug);
         if (!this.ready) {
-            throw new Cesium.DeveloperError('The tileset is not loaded.  Use MapGISM3DSet.readyPromise or wait for MapGISM3DSet.ready to be true.');
+            throw new Cesium.DeveloperError(
+                'The tileset is not loaded.  Use MapGISM3DSet.readyPromise or wait for MapGISM3DSet.ready to be true.'
+            );
         }
         // >>includeEnd('debug');
 
@@ -1499,7 +1550,9 @@ export default class MapGISM3DSet {
     get properties() {
         // >>includeStart('debug', pragmas.debug);
         if (!this.ready) {
-            throw new Cesium.DeveloperError('The tileset is not loaded.  Use MapGISM3DSet.readyPromise or wait for MapGISM3DSet.ready to be true.');
+            throw new Cesium.DeveloperError(
+                'The tileset is not loaded.  Use MapGISM3DSet.readyPromise or wait for MapGISM3DSet.ready to be true.'
+            );
         }
         // >>includeEnd('debug');
 
@@ -1586,7 +1639,10 @@ export default class MapGISM3DSet {
      * @deprecated
      */
     get basePath() {
-        Cesium.deprecationWarning('MapGISM3DSet.basePath', 'MapGISM3DSet.basePath has been deprecated. All tiles are relative to the url of the tileset.json that contains them. Use the url property instead.');
+        Cesium.deprecationWarning(
+            'MapGISM3DSet.basePath',
+            'MapGISM3DSet.basePath has been deprecated. All tiles are relative to the url of the tileset.json that contains them. Use the url property instead.'
+        );
         return this._basePath;
     }
 
@@ -1720,7 +1776,9 @@ export default class MapGISM3DSet {
     get root() {
         // >>includeStart('debug', pragmas.debug);
         if (!this.ready) {
-            throw new Cesium.DeveloperError('The tileset is not loaded.  Use Cesium3DTileset.readyPromise or wait for Cesium3DTileset.ready to be true.');
+            throw new Cesium.DeveloperError(
+                'The tileset is not loaded.  Use Cesium3DTileset.readyPromise or wait for Cesium3DTileset.ready to be true.'
+            );
         }
         // >>includeEnd('debug');
 
@@ -1750,7 +1808,9 @@ export default class MapGISM3DSet {
     get boundingSphere() {
         // >>includeStart('debug', pragmas.debug);
         if (!this.ready) {
-            throw new Cesium.DeveloperError('The tileset is not loaded.  Use MapGISM3DSet.readyPromise or wait for MapGISM3DSet.ready to be true.');
+            throw new Cesium.DeveloperError(
+                'The tileset is not loaded.  Use MapGISM3DSet.readyPromise or wait for MapGISM3DSet.ready to be true.'
+            );
         }
         // >>includeEnd('debug');
 
@@ -1822,7 +1882,11 @@ export default class MapGISM3DSet {
         }
 
         if (this._clippingPlanesOriginMatrixDirty) {
-            Cesium.Matrix4.multiply(this.root.computedTransform, this._initialClippingPlanesOriginMatrix, this._clippingPlanesOriginMatrix);
+            Cesium.Matrix4.multiply(
+                this.root.computedTransform,
+                this._initialClippingPlanesOriginMatrix,
+                this._clippingPlanesOriginMatrix
+            );
             this._clippingPlanesOriginMatrixDirty = false;
         }
 
@@ -1925,7 +1989,11 @@ export default class MapGISM3DSet {
     set foveatedMinimumScreenSpaceErrorRelaxation(value) {
         // >>includeStart('debug', pragmas.debug);
         Cesium.Check.typeOf.number.greaterThanOrEquals('foveatedMinimumScreenSpaceErrorRelaxation', value, 0.0);
-        Cesium.Check.typeOf.number.lessThanOrEquals('foveatedMinimumScreenSpaceErrorRelaxation', value, this.maximumScreenSpaceError);
+        Cesium.Check.typeOf.number.lessThanOrEquals(
+            'foveatedMinimumScreenSpaceErrorRelaxation',
+            value,
+            this.maximumScreenSpaceError
+        );
         // >>includeEnd('debug');
 
         this._foveatedMinimumScreenSpaceErrorRelaxation = value;
@@ -1947,7 +2015,9 @@ export default class MapGISM3DSet {
     get extras() {
         // >>includeStart('debug', pragmas.debug);
         if (!this.ready) {
-            throw new Cesium.DeveloperError('The tileset is not loaded.  Use Cesium3DTileset.readyPromise or wait for Cesium3DTileset.ready to be true.');
+            throw new Cesium.DeveloperError(
+                'The tileset is not loaded.  Use Cesium3DTileset.readyPromise or wait for Cesium3DTileset.ready to be true.'
+            );
         }
         // >>includeEnd('debug');
 
@@ -2220,9 +2290,16 @@ export default class MapGISM3DSet {
         if (!Cesium.defined(this._loadTimestamp)) {
             this._loadTimestamp = Cesium.JulianDate.clone(frameState.time);
         }
-        this._timeSinceLoad = Math.max(Cesium.JulianDate.secondsDifference(frameState.time, this._loadTimestamp) * 1000, 0.0);
+        this._timeSinceLoad = Math.max(
+            Cesium.JulianDate.secondsDifference(frameState.time, this._loadTimestamp) * 1000,
+            0.0
+        );
 
-        this._skipLevelOfDetail = this.skipLevelOfDetail && !Cesium.defined(this._classificationType) && !this._disableSkipLevelOfDetail && !this._allTilesAdditive;
+        this._skipLevelOfDetail =
+            this.skipLevelOfDetail &&
+            !Cesium.defined(this._classificationType) &&
+            !this._disableSkipLevelOfDetail &&
+            !this._allTilesAdditive;
 
         if (this.dynamicScreenSpaceError) {
             updateDynamicScreenSpaceError(this, frameState);
@@ -2314,7 +2391,14 @@ export default class MapGISM3DSet {
         // >>includeEnd('debug');
 
         const { pass } = tilesetPassState;
-        if ((pass === Cesium.Cesium3DTilePass.PRELOAD && (!this.preloadWhenHidden || this.show)) || (pass === Cesium.Cesium3DTilePass.PRELOAD_FLIGHT && (!this.preloadFlightDestinations || (!this.show && !this.preloadWhenHidden))) || (pass === Cesium.Cesium3DTilePass.REQUEST_RENDER_MODE_DEFER_CHECK && !this.cullRequestsWhileMoving && this.foveatedTimeDelay <= 0)) {
+        if (
+            (pass === Cesium.Cesium3DTilePass.PRELOAD && (!this.preloadWhenHidden || this.show)) ||
+            (pass === Cesium.Cesium3DTilePass.PRELOAD_FLIGHT &&
+                (!this.preloadFlightDestinations || (!this.show && !this.preloadWhenHidden))) ||
+            (pass === Cesium.Cesium3DTilePass.REQUEST_RENDER_MODE_DEFER_CHECK &&
+                !this.cullRequestsWhileMoving &&
+                this.foveatedTimeDelay <= 0)
+        ) {
             return;
         }
 
@@ -2403,7 +2487,6 @@ export default class MapGISM3DSet {
         this._root = undefined;
         return Cesium.destroyObject(this);
     }
-    // --->>>
 }
 
 CesiumZondy.M3D.MapGISM3DSet = MapGISM3DSet;

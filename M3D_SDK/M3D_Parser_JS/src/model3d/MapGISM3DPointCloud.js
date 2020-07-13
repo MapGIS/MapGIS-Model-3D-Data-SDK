@@ -1,11 +1,6 @@
-import { CesiumZondy } from './core/Base';
-import getClippingFunction from './shaders/getClippingFunction';
-import getClipAndStyleCode from './shaders/getClipAndStyleCode';
-// // Bail out if the browser doesn't support typed arrays, to prevent the setup function
-// // from failing, since we won't be able to create a WebGL context anyway.
-// if (!Cesium.FeatureDetection.supportsTypedArrays()) {
-//     return {};
-// }
+import { CesiumZondy } from '../core/Base';
+import getClippingFunction from '../shaders/getClippingFunction';
+import getClipAndStyleCode from '../shaders/getClipAndStyleCode';
 
 const DecodingState = {
     NEEDS_DECODE: 0,
@@ -113,8 +108,13 @@ function initialize(pointCloudParam, options) {
     let dracoFeatureTableProperties;
     let dracoBatchTableProperties;
 
-    const featureTableDraco = Cesium.defined(featureTableJson.extensions) ? featureTableJson.extensions['3DTILES_draco_point_compression'] : undefined;
-    const batchTableDraco = Cesium.defined(batchTableJson) && Cesium.defined(batchTableJson.extensions) ? batchTableJson.extensions['3DTILES_draco_point_compression'] : undefined;
+    const featureTableDraco = Cesium.defined(featureTableJson.extensions)
+        ? featureTableJson.extensions['3DTILES_draco_point_compression']
+        : undefined;
+    const batchTableDraco =
+        Cesium.defined(batchTableJson) && Cesium.defined(batchTableJson.extensions)
+            ? batchTableJson.extensions['3DTILES_draco_point_compression']
+            : undefined;
 
     if (Cesium.defined(batchTableDraco)) {
         dracoBatchTableProperties = batchTableDraco.properties;
@@ -124,7 +124,11 @@ function initialize(pointCloudParam, options) {
         dracoFeatureTableProperties = featureTableDraco.properties;
         const dracoByteOffset = featureTableDraco.byteOffset;
         const dracoByteLength = featureTableDraco.byteLength;
-        if (!Cesium.defined(dracoFeatureTableProperties) || !Cesium.defined(dracoByteOffset) || !Cesium.defined(dracoByteLength)) {
+        if (
+            !Cesium.defined(dracoFeatureTableProperties) ||
+            !Cesium.defined(dracoByteOffset) ||
+            !Cesium.defined(dracoByteLength)
+        ) {
             throw new Cesium.RuntimeError('Draco properties, byteOffset, and byteLength must be defined');
         }
 
@@ -157,16 +161,28 @@ function initialize(pointCloudParam, options) {
             isQuantized = true;
             hasPositions = true;
 
-            const quantizedVolumeScale = featureTable.getGlobalProperty('QUANTIZED_VOLUME_SCALE', Cesium.ComponentDatatype.FLOAT, 3);
+            const quantizedVolumeScale = featureTable.getGlobalProperty(
+                'QUANTIZED_VOLUME_SCALE',
+                Cesium.ComponentDatatype.FLOAT,
+                3
+            );
             if (!Cesium.defined(quantizedVolumeScale)) {
-                throw new Cesium.RuntimeError('Global property: QUANTIZED_VOLUME_SCALE must be defined for quantized positions.');
+                throw new Cesium.RuntimeError(
+                    'Global property: QUANTIZED_VOLUME_SCALE must be defined for quantized positions.'
+                );
             }
             pointCloud._quantizedVolumeScale = Cesium.Cartesian3.unpack(quantizedVolumeScale);
             pointCloud._quantizedRange = 2 ** 16 - 1;
 
-            const quantizedVolumeOffset = featureTable.getGlobalProperty('QUANTIZED_VOLUME_OFFSET', Cesium.ComponentDatatype.FLOAT, 3);
+            const quantizedVolumeOffset = featureTable.getGlobalProperty(
+                'QUANTIZED_VOLUME_OFFSET',
+                Cesium.ComponentDatatype.FLOAT,
+                3
+            );
             if (!Cesium.defined(quantizedVolumeOffset)) {
-                throw new Cesium.RuntimeError('Global property: QUANTIZED_VOLUME_OFFSET must be defined for quantized positions.');
+                throw new Cesium.RuntimeError(
+                    'Global property: QUANTIZED_VOLUME_OFFSET must be defined for quantized positions.'
+                );
             }
             pointCloud._quantizedVolumeOffset = Cesium.Cartesian3.unpack(quantizedVolumeOffset);
         }
@@ -211,7 +227,13 @@ function initialize(pointCloudParam, options) {
 
     if (Cesium.defined(featureTableJson.CONSTANT_RGBA)) {
         const constantRGBA = featureTable.getGlobalProperty('CONSTANT_RGBA', Cesium.ComponentDatatype.UNSIGNED_BYTE, 4);
-        pointCloud._constantColor = Cesium.Color.fromBytes(constantRGBA[0], constantRGBA[1], constantRGBA[2], constantRGBA[3], pointCloud._constantColor);
+        pointCloud._constantColor = Cesium.Color.fromBytes(
+            constantRGBA[0],
+            constantRGBA[1],
+            constantRGBA[2],
+            constantRGBA[3],
+            pointCloud._constantColor
+        );
     }
 
     if (hasBatchIds) {
@@ -233,7 +255,11 @@ function initialize(pointCloudParam, options) {
     // If points are not batched and there are per-point properties, use these properties for styling purposes
     let styleableProperties;
     if (!hasBatchIds && Cesium.defined(batchTableBinary)) {
-        styleableProperties = Cesium.Cesium3DTileBatchTable.getBinaryProperties(pointsLength, batchTableJson, batchTableBinary);
+        styleableProperties = Cesium.Cesium3DTileBatchTable.getBinaryProperties(
+            pointsLength,
+            batchTableJson,
+            batchTableBinary
+        );
     }
 
     pointCloud._parsedContent = {
@@ -295,8 +321,15 @@ function computeApproximateBoundingSphereFromPositions(positions) {
 function prepareVertexAttribute(typedArray, name) {
     // WebGL does not support UNSIGNED_INT, INT, or DOUBLE vertex attributes. Convert these to FLOAT.
     const componentDatatype = Cesium.ComponentDatatype.fromTypedArray(typedArray);
-    if (componentDatatype === Cesium.ComponentDatatype.INT || componentDatatype === Cesium.ComponentDatatype.UNSIGNED_INT || componentDatatype === Cesium.ComponentDatatype.DOUBLE) {
-        Cesium.oneTimeWarning('Cast pnts property to floats', `Point cloud property "${name}" will be casted to a float array because INT, UNSIGNED_INT, and DOUBLE are not valid WebGL vertex attribute types. Some precision may be lost.`);
+    if (
+        componentDatatype === Cesium.ComponentDatatype.INT ||
+        componentDatatype === Cesium.ComponentDatatype.UNSIGNED_INT ||
+        componentDatatype === Cesium.ComponentDatatype.DOUBLE
+    ) {
+        Cesium.oneTimeWarning(
+            'Cast pnts property to floats',
+            `Point cloud property "${name}" will be casted to a float array because INT, UNSIGNED_INT, and DOUBLE are not valid WebGL vertex attribute types. Some precision may be lost.`
+        );
         return new Float32Array(typedArray);
     }
     return typedArray;
@@ -429,7 +462,8 @@ function createResources(pointCloudParam, frameState) {
     if (isQuantized) {
         componentDatatype = Cesium.ComponentDatatype.UNSIGNED_SHORT;
     } else if (isQuantizedDraco) {
-        componentDatatype = quantizedRange <= 255 ? Cesium.ComponentDatatype.UNSIGNED_BYTE : Cesium.ComponentDatatype.UNSIGNED_SHORT;
+        componentDatatype =
+            quantizedRange <= 255 ? Cesium.ComponentDatatype.UNSIGNED_BYTE : Cesium.ComponentDatatype.UNSIGNED_SHORT;
     } else {
         componentDatatype = Cesium.ComponentDatatype.FLOAT;
     }
@@ -446,7 +480,10 @@ function createResources(pointCloudParam, frameState) {
 
     if (pointCloud._cull) {
         if (isQuantized || isQuantizedDraco) {
-            pointCloud._boundingSphere = Cesium.BoundingSphere.fromCornerPoints(Cesium.Cartesian3.ZERO, pointCloud._quantizedVolumeScale);
+            pointCloud._boundingSphere = Cesium.BoundingSphere.fromCornerPoints(
+                Cesium.Cartesian3.ZERO,
+                pointCloud._quantizedVolumeScale
+            );
         } else {
             pointCloud._boundingSphere = computeApproximateBoundingSphereFromPositions(positions);
         }
@@ -483,7 +520,10 @@ function createResources(pointCloudParam, frameState) {
             componentDatatype = Cesium.ComponentDatatype.UNSIGNED_BYTE;
         } else if (isOctEncodedDraco) {
             componentsPerAttribute = 2;
-            componentDatatype = octEncodedRange <= 255 ? Cesium.ComponentDatatype.UNSIGNED_BYTE : Cesium.ComponentDatatype.UNSIGNED_SHORT;
+            componentDatatype =
+                octEncodedRange <= 255
+                    ? Cesium.ComponentDatatype.UNSIGNED_BYTE
+                    : Cesium.ComponentDatatype.UNSIGNED_SHORT;
         } else {
             componentsPerAttribute = 3;
             componentDatatype = Cesium.ComponentDatatype.FLOAT;
@@ -615,9 +655,20 @@ function createUniformMap(pointCloudParam, frameState) {
                 return Cesium.Matrix4.IDENTITY;
             }
 
-            const clippingPlanesOriginMatrix = Cesium.defaultValue(pointCloud.clippingPlanesOriginMatrix, pointCloud._modelMatrix);
-            Cesium.Matrix4.multiply(context.uniformState.view3D, clippingPlanesOriginMatrix, scratchClippingPlaneMatrix);
-            return Cesium.Matrix4.multiply(scratchClippingPlaneMatrix, clippingPlanes.modelMatrix, scratchClippingPlaneMatrix);
+            const clippingPlanesOriginMatrix = Cesium.defaultValue(
+                pointCloud.clippingPlanesOriginMatrix,
+                pointCloud._modelMatrix
+            );
+            Cesium.Matrix4.multiply(
+                context.uniformState.view3D,
+                clippingPlanesOriginMatrix,
+                scratchClippingPlaneMatrix
+            );
+            return Cesium.Matrix4.multiply(
+                scratchClippingPlaneMatrix,
+                clippingPlanes.modelMatrix,
+                scratchClippingPlaneMatrix
+            );
         }
     };
 
@@ -719,7 +770,11 @@ function createShaders(pointCloudParam, frameState, style) {
         };
         colorStyleFunction = style.getColorShaderFunction('getColorFromStyle', 'czm_tiles3d_style_', shaderState);
         showStyleFunction = style.getShowShaderFunction('getShowFromStyle', 'czm_tiles3d_style_', shaderState);
-        pointSizeStyleFunction = style.getPointSizeShaderFunction('getPointSizeFromStyle', 'czm_tiles3d_style_', shaderState);
+        pointSizeStyleFunction = style.getPointSizeShaderFunction(
+            'getPointSizeFromStyle',
+            'czm_tiles3d_style_',
+            shaderState
+        );
         if (Cesium.defined(colorStyleFunction) && shaderState.translucent) {
             styleTranslucent = true;
         }
@@ -808,7 +863,9 @@ function createShaders(pointCloudParam, frameState, style) {
         name = userProperties[i];
         attribute = styleableShaderAttributes[name];
         if (!Cesium.defined(attribute)) {
-            throw new Cesium.RuntimeError(`Style references a property "${name}" that does not exist or is not styleable.`);
+            throw new Cesium.RuntimeError(
+                `Style references a property "${name}" that does not exist or is not styleable.`
+            );
         }
 
         const { componentCount } = attribute;
@@ -826,7 +883,8 @@ function createShaders(pointCloudParam, frameState, style) {
 
     createUniformMap(pointCloud, frameState);
 
-    let vs = 'attribute vec3 a_position; \n varying vec4 v_color; \n uniform vec4 u_pointSizeAndTimeAndGeometricErrorAndDepthMultiplier; \n uniform vec4 u_constantColor; \n uniform vec4 u_highlightColor; \n';
+    let vs =
+        'attribute vec3 a_position; \n varying vec4 v_color; \n uniform vec4 u_pointSizeAndTimeAndGeometricErrorAndDepthMultiplier; \n uniform vec4 u_constantColor; \n uniform vec4 u_highlightColor; \n';
     vs += 'float u_pointSize; \n float u_time; \n';
 
     if (attenuation) {
@@ -839,7 +897,8 @@ function createShaders(pointCloudParam, frameState, style) {
         if (isTranslucent) {
             vs += 'attribute vec4 a_color; \n';
         } else if (isRGB565) {
-            vs += 'attribute float a_color; \n const float SHIFT_RIGHT_11 = 1.0 / 2048.0; \n const float SHIFT_RIGHT_5 = 1.0 / 32.0; \n const float SHIFT_LEFT_11 = 2048.0; \n const float SHIFT_LEFT_5 = 32.0; \n const float NORMALIZE_6 = 1.0 / 64.0; \n const float NORMALIZE_5 = 1.0 / 32.0; \n';
+            vs +=
+                'attribute float a_color; \n const float SHIFT_RIGHT_11 = 1.0 / 2048.0; \n const float SHIFT_RIGHT_5 = 1.0 / 32.0; \n const float SHIFT_LEFT_11 = 2048.0; \n const float SHIFT_LEFT_5 = 32.0; \n const float NORMALIZE_6 = 1.0 / 64.0; \n const float NORMALIZE_5 = 1.0 / 32.0; \n';
         } else {
             vs += 'attribute vec3 a_color; \n';
         }
@@ -872,17 +931,20 @@ function createShaders(pointCloudParam, frameState, style) {
         vs += pointSizeStyleFunction;
     }
 
-    vs += 'void main() \n { \n     u_pointSize = u_pointSizeAndTimeAndGeometricErrorAndDepthMultiplier.x; \n     u_time = u_pointSizeAndTimeAndGeometricErrorAndDepthMultiplier.y; \n';
+    vs +=
+        'void main() \n { \n     u_pointSize = u_pointSizeAndTimeAndGeometricErrorAndDepthMultiplier.x; \n     u_time = u_pointSizeAndTimeAndGeometricErrorAndDepthMultiplier.y; \n';
 
     if (attenuation) {
-        vs += '    u_geometricError = u_pointSizeAndTimeAndGeometricErrorAndDepthMultiplier.z; \n     u_depthMultiplier = u_pointSizeAndTimeAndGeometricErrorAndDepthMultiplier.w; \n';
+        vs +=
+            '    u_geometricError = u_pointSizeAndTimeAndGeometricErrorAndDepthMultiplier.z; \n     u_depthMultiplier = u_pointSizeAndTimeAndGeometricErrorAndDepthMultiplier.w; \n';
     }
 
     if (usesColors) {
         if (isTranslucent) {
             vs += '    vec4 color = a_color; \n';
         } else if (isRGB565) {
-            vs += '    float compressed = a_color; \n     float r = floor(compressed * SHIFT_RIGHT_11); \n     compressed -= r * SHIFT_LEFT_11; \n     float g = floor(compressed * SHIFT_RIGHT_5); \n     compressed -= g * SHIFT_LEFT_5; \n     float b = compressed; \n     vec3 rgb = vec3(r * NORMALIZE_5, g * NORMALIZE_6, b * NORMALIZE_5); \n     vec4 color = vec4(rgb, 1.0); \n';
+            vs +=
+                '    float compressed = a_color; \n     float r = floor(compressed * SHIFT_RIGHT_11); \n     compressed -= r * SHIFT_LEFT_11; \n     float g = floor(compressed * SHIFT_RIGHT_5); \n     compressed -= g * SHIFT_LEFT_5; \n     float b = compressed; \n     vec3 rgb = vec3(r * NORMALIZE_5, g * NORMALIZE_6, b * NORMALIZE_5); \n     vec4 color = vec4(rgb, 1.0); \n';
         } else {
             vs += '    vec4 color = vec4(a_color, 1.0); \n';
         }
@@ -943,7 +1005,8 @@ function createShaders(pointCloudParam, frameState, style) {
     vs += '    v_color = color; \n     gl_Position = czm_modelViewProjection * vec4(position, 1.0); \n';
 
     if (usesNormals && backFaceCulling) {
-        vs += '    float visible = step(-normalEC.z, 0.0); \n     gl_Position *= visible; \n     gl_PointSize *= visible; \n';
+        vs +=
+            '    float visible = step(-normalEC.z, 0.0); \n     gl_Position *= visible; \n     gl_PointSize *= visible; \n';
     }
 
     if (hasShowStyle) {
@@ -955,7 +1018,8 @@ function createShaders(pointCloudParam, frameState, style) {
     let fs = 'varying vec4 v_color; \n';
 
     if (hasClippedContent) {
-        fs += 'uniform sampler2D u_clippingPlanes; \n uniform mat4 u_clippingPlanesMatrix; \n uniform vec4 u_clippingPlanesEdgeStyle; \n';
+        fs +=
+            'uniform sampler2D u_clippingPlanes; \n uniform mat4 u_clippingPlanesMatrix; \n uniform vec4 u_clippingPlanesEdgeStyle; \n';
         fs += '\n';
         fs += getClippingFunction(clippingPlanes, context);
         fs += '\n';
@@ -994,7 +1058,9 @@ function createShaders(pointCloudParam, frameState, style) {
         drawCommand.shaderProgram._bind();
     } catch (error) {
         // Rephrase the error.
-        throw new Cesium.RuntimeError('Error generating style shader: this may be caused by a type mismatch, index out-of-bounds, or other syntax error.');
+        throw new Cesium.RuntimeError(
+            'Error generating style shader: this may be caused by a type mismatch, index out-of-bounds, or other syntax error.'
+        );
     }
 }
 
@@ -1017,8 +1083,10 @@ function decodeDraco(pointCloudParam, context) {
                     const decodedRgba = Cesium.defined(result.RGBA) ? result.RGBA.array : undefined;
                     const decodedNormals = Cesium.defined(result.NORMAL) ? result.NORMAL.array : undefined;
                     const decodedBatchIds = Cesium.defined(result.BATCH_ID) ? result.BATCH_ID.array : undefined;
-                    const isQuantizedDraco = Cesium.defined(decodedPositions) && Cesium.defined(result.POSITION.data.quantization);
-                    const isOctEncodedDraco = Cesium.defined(decodedNormals) && Cesium.defined(result.NORMAL.data.quantization);
+                    const isQuantizedDraco =
+                        Cesium.defined(decodedPositions) && Cesium.defined(result.POSITION.data.quantization);
+                    const isOctEncodedDraco =
+                        Cesium.defined(decodedNormals) && Cesium.defined(result.NORMAL.data.quantization);
                     if (isQuantizedDraco) {
                         // Draco quantization range == quantized volume scale - size in meters of the quantized volume
                         // Internal quantized range is the range of values of the quantized data, e.g. 255 for 8-bit, 1023 for 10-bit, etc
@@ -1051,7 +1119,10 @@ function decodeDraco(pointCloudParam, context) {
                     });
                     // }
                     parsedContent.positions = Cesium.defaultValue(decodedPositions, parsedContent.positions);
-                    parsedContent.colors = Cesium.defaultValue(Cesium.defaultValue(decodedRgba, decodedRgb), parsedContent.colors);
+                    parsedContent.colors = Cesium.defaultValue(
+                        Cesium.defaultValue(decodedRgba, decodedRgb),
+                        parsedContent.colors
+                    );
                     parsedContent.normals = Cesium.defaultValue(decodedNormals, parsedContent.normals);
                     parsedContent.batchIds = Cesium.defaultValue(decodedBatchIds, parsedContent.batchIds);
                     parsedContent.styleableProperties = styleableProperties;
@@ -1288,7 +1359,8 @@ export default class MapGISM3DPointCloud {
         this._drawCommand.receiveShadows = Cesium.ShadowMode.receiveShadows(this.shadows);
 
         // Update the render state
-        const isTranslucent = this._highlightColor.alpha < 1.0 || this._constantColor.alpha < 1.0 || this._styleTranslucent;
+        const isTranslucent =
+            this._highlightColor.alpha < 1.0 || this._constantColor.alpha < 1.0 || this._styleTranslucent;
         this._drawCommand.renderState = isTranslucent ? this._translucentRenderState : this._opaqueRenderState;
         this._drawCommand.pass = isTranslucent ? Cesium.Pass.TRANSLUCENT : this._opaquePass;
 

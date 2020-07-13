@@ -9,7 +9,8 @@
     <title>Load M3D</title>
 
     <script type="text/javascript" src="./libs/Cesium/Cesium.js"></script>
-    <script type="text/javascript" src="./dist/m3d-layer-min.js"></script>
+    <!-- <script type="text/javascript" src="./dist/m3d-layer-min.js"></script> -->
+    <script type="text/javascript" src="./dist/m3d-layer-debug.js"></script>
 </head>
 
 <body>
@@ -38,29 +39,13 @@
                 timeline: true
             });
 
+            // 加载文件服务数据
             let url = './data/景观_建筑模型/景观_建筑模型.mcj';
+            CesiumZondy.M3D.appendM3D(viewer, url, 'file', { maximumScreenSpaceError: 8 });
 
-            let m3dLayer = new CesiumZondy.M3D.MapGISM3DSet({
-                context: viewer.scene._context,
-                maximumScreenSpaceError: 8,
-                url: url
-            });
-
-            let tileset = viewer.scene.primitives.add(m3dLayer);
-            return tileset.readyPromise.then(function (tileset1) {
-                let boundingSphere = tileset.boundingSphere;
-                viewer.camera.viewBoundingSphere(boundingSphere, new Cesium.HeadingPitchRange(
-                    0.0, -0.5,
-                    boundingSphere.radius));
-                viewer.camera.lookAtTransform(Cesium.Matrix4.IDENTITY);
-                let cartographic = Cesium.Cartographic.fromCartesian(tileset.boundingSphere.center);
-                let surface = Cesium.Cartesian3.fromRadians(cartographic.longitude, cartographic.latitude, 0.0);
-                let offset = Cesium.Cartesian3.fromRadians(cartographic.longitude, cartographic.latitude, -0.5);
-                let translation = Cesium.Cartesian3.subtract(offset, surface, new Cesium.Cartesian3());
-                tileset.modelMatrix = Cesium.Matrix4.fromTranslation(translation);
-            }).otherwise(function (error) {
-                throw (error);
-            });
+            // 加载igs服务数据
+            // url = 'http://develop.smaryun.com:6163/igs/rest/g3d/ZondyModels';
+            // CesiumZondy.M3D.appendM3D(viewer, url, 'igs', { maximumScreenSpaceError: 8 });
         }
 
         if (typeof Cesium !== 'undefined') {

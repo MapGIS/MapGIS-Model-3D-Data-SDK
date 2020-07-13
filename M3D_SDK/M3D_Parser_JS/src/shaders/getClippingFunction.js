@@ -113,13 +113,19 @@ export default function getClippingFunction(clippingPlaneCollection, context) {
     const { unionClippingRegions } = clippingPlaneCollection;
     const clippingPlanesLength = clippingPlaneCollection.length;
     const usingFloatTexture = Cesium.ClippingPlaneCollection.useFloatTexture(context);
-    const textureResolution = Cesium.ClippingPlaneCollection.getTextureResolution(clippingPlaneCollection, context, textureResolutionScratch);
+    const textureResolution = Cesium.ClippingPlaneCollection.getTextureResolution(
+        clippingPlaneCollection,
+        context,
+        textureResolutionScratch
+    );
     const width = textureResolution.x;
     const height = textureResolution.y;
 
     let functions = usingFloatTexture ? getClippingPlaneFloat(width, height) : getClippingPlaneUint8(width, height);
     functions += '\n';
-    functions += unionClippingRegions ? clippingFunctionUnion(clippingPlanesLength) : clippingFunctionIntersect(clippingPlanesLength);
+    functions += unionClippingRegions
+        ? clippingFunctionUnion(clippingPlanesLength)
+        : clippingFunctionIntersect(clippingPlanesLength);
     return functions;
 }
 

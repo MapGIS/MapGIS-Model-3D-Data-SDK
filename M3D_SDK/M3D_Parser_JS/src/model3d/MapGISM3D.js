@@ -1,4 +1,4 @@
-import { CesiumZondy } from './core/Base';
+import { CesiumZondy } from '../core/Base';
 import MapGISM3DDataContent from './MapGISM3DDataContent';
 
 const { deprecationWarning } = Cesium;
@@ -14,7 +14,11 @@ function isPriorityDeferred(tileParam, frameStateParam) {
     const { camera } = frameState;
     const { boundingSphere } = tile;
     const { radius } = boundingSphere;
-    const scaledCameraDirection = Cesium.Cartesian3.multiplyByScalar(camera.directionWC, tile._centerZDepth, scratchCartesian);
+    const scaledCameraDirection = Cesium.Cartesian3.multiplyByScalar(
+        camera.directionWC,
+        tile._centerZDepth,
+        scratchCartesian
+    );
 
     const closestPointOnLine = Cesium.Cartesian3.add(camera.positionWC, scaledCameraDirection, scratchCartesian);
     // The distance from the camera's view direction to the tile.
@@ -41,7 +45,14 @@ function isPriorityDeferred(tileParam, frameStateParam) {
     // Or if the tile is a preload of any kind
     const replace = tile.refine === Cesium.Cesium3DTileRefine.REPLACE;
     const skipLevelOfDetail = tileset._skipLevelOfDetail;
-    if ((replace && !skipLevelOfDetail) || !tileset.foveatedScreenSpaceError || tileset.foveatedConeSize === 1.0 || (tile._priorityProgressiveResolution && replace && skipLevelOfDetail) || tileset._pass === Cesium.Cesium3DTilePass.PRELOAD_FLIGHT || tileset._pass === Cesium.Cesium3DTilePass.PRELOAD) {
+    if (
+        (replace && !skipLevelOfDetail) ||
+        !tileset.foveatedScreenSpaceError ||
+        tileset.foveatedConeSize === 1.0 ||
+        (tile._priorityProgressiveResolution && replace && skipLevelOfDetail) ||
+        tileset._pass === Cesium.Cesium3DTilePass.PRELOAD_FLIGHT ||
+        tileset._pass === Cesium.Cesium3DTilePass.PRELOAD
+    ) {
         return false;
     }
 
@@ -56,8 +67,15 @@ function isPriorityDeferred(tileParam, frameStateParam) {
     // Relax SSE based on how big the angle is between the tile and the edge of the foveated cone.
     const range = maximumFovatedFactor - foveatedConeFactor;
     const normalizedFoveatedFactor = Cesium.Math.clamp((tile._foveatedFactor - foveatedConeFactor) / range, 0.0, 1.0);
-    const sseRelaxation = tileset.foveatedInterpolationCallback(tileset.foveatedMinimumScreenSpaceErrorRelaxation, tileset.maximumScreenSpaceError, normalizedFoveatedFactor);
-    const sse = tile._screenSpaceError === 0.0 && Cesium.defined(tile.parent) ? tile.parent._screenSpaceError * 0.5 : tile._screenSpaceError;
+    const sseRelaxation = tileset.foveatedInterpolationCallback(
+        tileset.foveatedMinimumScreenSpaceErrorRelaxation,
+        tileset.maximumScreenSpaceError,
+        normalizedFoveatedFactor
+    );
+    const sse =
+        tile._screenSpaceError === 0.0 && Cesium.defined(tile.parent)
+            ? tile.parent._screenSpaceError * 0.5
+            : tile._screenSpaceError;
 
     return tileset.maximumScreenSpaceError - sseRelaxation <= sse;
 }
@@ -76,7 +94,8 @@ function isPriorityProgressiveResolution(tilesetParam, tileParam) {
     const { parent } = tile;
     const maximumScreenSpaceError = tileset._maximumScreenSpaceError;
     const tilePasses = tile._screenSpaceErrorProgressiveResolution <= maximumScreenSpaceError;
-    const parentFails = Cesium.defined(parent) && parent._screenSpaceErrorProgressiveResolution > maximumScreenSpaceError;
+    const parentFails =
+        Cesium.defined(parent) && parent._screenSpaceErrorProgressiveResolution > maximumScreenSpaceError;
     if (tilePasses && parentFails) {
         // A progressive resolution SSE leaf, promote its priority as well
         tile._priorityProgressiveResolutionScreenSpaceErrorLeaf = true;
@@ -89,7 +108,9 @@ function getPriorityReverseScreenSpaceError(tilesetParam, tileParam) {
     const tileset = tilesetParam;
     const tile = tileParam;
     const { parent } = tile;
-    const useParentScreenSpaceError = Cesium.defined(parent) && (!tileset._skipLevelOfDetail || tile._screenSpaceError === 0.0 || parent.hasTilesetContent);
+    const useParentScreenSpaceError =
+        Cesium.defined(parent) &&
+        (!tileset._skipLevelOfDetail || tile._screenSpaceError === 0.0 || parent.hasTilesetContent);
     const screenSpaceError = useParentScreenSpaceError ? parent._screenSpaceError : tile._screenSpaceError;
     return tileset.root._screenSpaceError - screenSpaceError;
 }
@@ -133,7 +154,11 @@ function getBoundingVolume(tileParam, frameStateParam) {
     const frameState = frameStateParam;
     if (frameState.mode !== Cesium.SceneMode.SCENE3D && !Cesium.defined(tile._boundingVolume2D)) {
         const { boundingSphere } = tile._boundingVolume;
-        const sphere = Cesium.BoundingSphere.projectTo2D(boundingSphere, frameState.mapProjection, scratchProjectedBoundingSphere);
+        const sphere = Cesium.BoundingSphere.projectTo2D(
+            boundingSphere,
+            frameState.mapProjection,
+            scratchProjectedBoundingSphere
+        );
         tile._boundingVolume2D = new Cesium.TileBoundingSphere(sphere.center, sphere.radius);
     }
 
@@ -145,7 +170,11 @@ function getContentBoundingVolume(tileParam, frameStateParam) {
     const frameState = frameStateParam;
     if (frameState.mode !== Cesium.SceneMode.SCENE3D && !Cesium.defined(tile._contentBoundingVolume2D)) {
         const { boundingSphere } = tile._contentBoundingVolume;
-        const sphere = Cesium.BoundingSphere.projectTo2D(boundingSphere, frameState.mapProjection, scratchProjectedBoundingSphere);
+        const sphere = Cesium.BoundingSphere.projectTo2D(
+            boundingSphere,
+            frameState.mapProjection,
+            scratchProjectedBoundingSphere
+        );
         tile._contentBoundingVolume2D = new Cesium.TileBoundingSphere(sphere.center, sphere.radius);
     }
     return frameState.mode !== Cesium.SceneMode.SCENE3D ? tile._contentBoundingVolume2D : tile._contentBoundingVolume;
@@ -192,14 +221,24 @@ function createBoxFromTransformedRegion(region, transformParam, initialTransform
     const minimumHeight = region[4];
     const maximumHeight = region[5];
 
-    const orientedBoundingBox = Cesium.OrientedBoundingBox.fromRectangle(rectangle, minimumHeight, maximumHeight, Cesium.Ellipsoid.WGS84, scratchOrientedBoundingBox);
+    const orientedBoundingBox = Cesium.OrientedBoundingBox.fromRectangle(
+        rectangle,
+        minimumHeight,
+        maximumHeight,
+        Cesium.Ellipsoid.WGS84,
+        scratchOrientedBoundingBox
+    );
     let { center } = orientedBoundingBox;
     let { halfAxes } = orientedBoundingBox;
 
     // A region bounding volume is not transformed by the transform in the tileset JSON,
     // but may be transformed by additional transforms applied in Cesium.
     // This is why the transform is calculated as the difference between the initial transform and the current transform.
-    transform = Cesium.Matrix4.multiplyTransformation(transform, Cesium.Matrix4.inverseTransformation(initialTransform, scratchTransform), scratchTransform);
+    transform = Cesium.Matrix4.multiplyTransformation(
+        transform,
+        Cesium.Matrix4.inverseTransformation(initialTransform, scratchTransform),
+        scratchTransform
+    );
     center = Cesium.Matrix4.multiplyByPoint(transform, center, center);
 
     // let rotationScale = Cesium.Matrix4.getRotation(transform, scratchMatrix);
@@ -263,10 +302,12 @@ function applyDebugSettings(tileParam, tileset, frameState) {
         return;
     }
 
-    const hasContentBoundingVolume = Cesium.defined(tile._header.content) && Cesium.defined(tile._header.content.boundingVolume);
+    const hasContentBoundingVolume =
+        Cesium.defined(tile._header.content) && Cesium.defined(tile._header.content.boundingVolume);
     const empty = tile.hasEmptyContent || tile.hasTilesetContent;
 
-    const showVolume = tileset.debugShowBoundingVolume || (tileset.debugShowContentBoundingVolume && !hasContentBoundingVolume);
+    const showVolume =
+        tileset.debugShowBoundingVolume || (tileset.debugShowContentBoundingVolume && !hasContentBoundingVolume);
     if (showVolume) {
         let color;
         if (!tile._finalResolution) {
@@ -304,7 +345,8 @@ function applyDebugSettings(tileParam, tileset, frameState) {
         tile._debugViewerRequestVolume = tile._debugViewerRequestVolume.destroy();
     }
 
-    const debugColorizeTilesOn = (tileset.debugColorizeTiles && !tile._debugColorizeTiles) || Cesium.defined(tileset._heatmap.tilePropertyName);
+    const debugColorizeTilesOn =
+        (tileset.debugColorizeTiles && !tile._debugColorizeTiles) || Cesium.defined(tileset._heatmap.tilePropertyName);
     const debugColorizeTilesOff = !tileset.debugColorizeTiles && tile._debugColorizeTiles;
 
     if (debugColorizeTilesOn) {
@@ -393,7 +435,9 @@ export default class MapGISM3D {
          * The local transform of this tile.
          * @type {Matrix4}
          */
-        this.transform = Cesium.defined(header.transform) ? Cesium.Matrix4.unpack(header.transform) : Cesium.Matrix4.clone(Cesium.Matrix4.IDENTITY);
+        this.transform = Cesium.defined(header.transform)
+            ? Cesium.Matrix4.unpack(header.transform)
+            : Cesium.Matrix4.clone(Cesium.Matrix4.IDENTITY);
 
         const parentTransform = Cesium.defined(parent) ? parent.computedTransform : tileset.modelMatrix;
         const computedTransform = Cesium.Matrix4.multiply(parentTransform, this.transform, new Cesium.Matrix4());
@@ -441,15 +485,26 @@ export default class MapGISM3D {
 
         if (!Cesium.defined(this.geometricError)) {
             this.geometricError = Cesium.defined(parent) ? parent.geometricError : tileset._geometricError;
-            MapGISM3D._deprecationWarning('geometricErrorUndefined', "Required property geometricError is undefined for this tile. Using parent's geometric error instead.");
+            MapGISM3D._deprecationWarning(
+                'geometricErrorUndefined',
+                "Required property geometricError is undefined for this tile. Using parent's geometric error instead."
+            );
         }
 
         let refine;
         if (Cesium.defined(header.refine)) {
             if (header.refine === 'replace' || header.refine === 'add') {
-                MapGISM3D._deprecationWarning('lowercase-refine', `This tile uses a lowercase refine "${header.refine}". Instead use "${header.refine.toUpperCase()}".`);
+                MapGISM3D._deprecationWarning(
+                    'lowercase-refine',
+                    `This tile uses a lowercase refine "${
+                        header.refine
+                    }". Instead use "${header.refine.toUpperCase()}".`
+                );
             }
-            refine = header.refine.toUpperCase() === 'REPLACE' ? Cesium.Cesium3DTileRefine.REPLACE : Cesium.Cesium3DTileRefine.ADD;
+            refine =
+                header.refine.toUpperCase() === 'REPLACE'
+                    ? Cesium.Cesium3DTileRefine.REPLACE
+                    : Cesium.Cesium3DTileRefine.ADD;
         } else if (Cesium.defined(parent)) {
             // Inherit from parent tile if omitted.
             refine = parent.refine;
@@ -501,7 +556,10 @@ export default class MapGISM3D {
         if (Cesium.defined(contentHeader)) {
             let contentHeaderUri = contentHeader.uri;
             if (Cesium.defined(contentHeader.url)) {
-                MapGISM3D._deprecationWarning('contentUrl', 'This tileset JSON uses the "content.url" property which has been deprecated. Use "content.uri" instead.');
+                MapGISM3D._deprecationWarning(
+                    'contentUrl',
+                    'This tileset JSON uses the "content.url" property which has been deprecated. Use "content.uri" instead.'
+                );
                 contentHeaderUri = contentHeader.url;
             }
 
@@ -520,13 +578,16 @@ export default class MapGISM3D {
                     const pos2 = contentResource.url.lastIndexOf('&webGL=');
                     dataName = contentResource.url.substring(pos1 + 9, pos2);
                     dataName = decodeURIComponent(dataName);
-                    // dataName = decodeURI(dataName);
-                    // let tempDataName =  dataName.substring(0, dataName.lastIndexOf('%') + 3);
-                    // if(tempDataName === ''){
+
                     const tempDataName = dataName.substring(0, dataName.lastIndexOf('/') + 1);
-                    // }
                     dataName = tempDataName;
                 }
+
+                if (contentHeaderUri.indexOf('..') === 0) {
+                    // fgy 兼容优化后m3d数据请求地址
+                    contentHeaderUri = contentHeaderUri.replace('..', 'data');
+                }
+
                 contentResource.url = contentResource.url.replace('datatype=10', 'datatype=11');
                 // 韩彦生 添加对m3d 地理服务图层的判断支持
                 if (this._tileset._isM3dDataServer > -1) {
@@ -534,11 +595,17 @@ export default class MapGISM3D {
                     // contentHeaderUri = contentHeaderUri.replace('/','\\');
                     // contentResource.url = contentResource.url +'&dataName='+ encodeURIComponent(dataName +contentHeaderUri)+ '&compress=false';
                     // contentResource.url = contentResource.url.replace('{dataName}',encodeURIComponent(dataName +contentHeaderUri)) ;///+ '&compress=false';
-                    contentResource.url = `${contentResource.url.substring(0, contentResource.url.lastIndexOf('&dataName=') + 10) + encodeURIComponent(dataName + contentHeaderUri)}&webGL=true`; /// + '&compress=false';
+                    contentResource.url = `${
+                        contentResource.url.substring(0, contentResource.url.lastIndexOf('&dataName=') + 10) +
+                        encodeURIComponent(dataName + contentHeaderUri)
+                    }&webGL=true`; /// + '&compress=false';
                 } else {
                     // contentResource._url = contentResource.url;//这里是为方便子节点使用
                     // hys 对地址中有+ 等特殊字符的做编码处理 不然会把这些特殊字符漏掉 encodeURIComponent
-                    contentResource.url = `${contentResource.url.substring(0, contentResource.url.lastIndexOf('datatype=') + 11)}&dataName=${encodeURIComponent(dataName + contentHeaderUri)}&webGL=true&compress=false`;
+                    contentResource.url = `${contentResource.url.substring(
+                        0,
+                        contentResource.url.lastIndexOf('datatype=') + 11
+                    )}&dataName=${encodeURIComponent(dataName + contentHeaderUri)}&webGL=true&compress=false`;
                     // contentResource.url = contentResource.url.replace('{dataName}', contentHeaderUrl);
                 }
             }
@@ -819,7 +886,10 @@ export default class MapGISM3D {
      * @private
      */
     get contentAvailable() {
-        return (this.contentReady && !this.hasEmptyContent && !this.hasTilesetContent) || (Cesium.defined(this._expiredContent) && !this.contentFailed);
+        return (
+            (this.contentReady && !this.hasEmptyContent && !this.hasTilesetContent) ||
+            (Cesium.defined(this._expiredContent) && !this.contentFailed)
+        );
     }
 
     /**
@@ -961,7 +1031,8 @@ export default class MapGISM3D {
             if (Cesium.defined(frustum._offCenterFrustum)) {
                 frustum = frustum._offCenterFrustum;
             }
-            const pixelSize = Math.max(frustum.top - frustum.bottom, frustum.right - frustum.left) / Math.max(width, height);
+            const pixelSize =
+                Math.max(frustum.top - frustum.bottom, frustum.right - frustum.left) / Math.max(width, height);
             error = geometricError / pixelSize;
         } else {
             // Avoid divide by zero when viewer is inside the tile
@@ -988,12 +1059,18 @@ export default class MapGISM3D {
         const { parent } = this;
         const tileset = this._tileset;
         const parentTransform = Cesium.defined(parent) ? parent.computedTransform : tileset.modelMatrix;
-        const parentVisibilityPlaneMask = Cesium.defined(parent) ? parent._visibilityPlaneMask : Cesium.CullingVolume.MASK_INDETERMINATE;
+        const parentVisibilityPlaneMask = Cesium.defined(parent)
+            ? parent._visibilityPlaneMask
+            : Cesium.CullingVolume.MASK_INDETERMINATE;
         this.updateTransform(parentTransform);
         this._distanceToCamera = this.distanceToTile(frameState);
         this._centerZDepth = this.distanceToTileCenter(frameState);
         this._screenSpaceError = this.getScreenSpaceError(frameState, false);
-        this._screenSpaceErrorProgressiveResolution = this.getScreenSpaceError(frameState, false, tileset.progressiveResolutionHeightFraction);
+        this._screenSpaceErrorProgressiveResolution = this.getScreenSpaceError(
+            frameState,
+            false,
+            tileset.progressiveResolutionHeightFraction
+        );
         this._visibilityPlaneMask = this.visibility(frameState, parentVisibilityPlaneMask); // Use parent's plane mask to speed up visibility test
         this._visible = this._visibilityPlaneMask !== Cesium.CullingVolume.MASK_OUTSIDE;
         this._inRequestVolume = this.insideViewerRequestVolume(frameState);
@@ -1081,8 +1158,20 @@ export default class MapGISM3D {
                 let magic = Cesium.getMagic(uint8Array);
                 magic = 'm3d';
                 if (!Cesium.defined(Cesium.Cesium3DTileContentFactory.m3d)) {
-                    Cesium.Cesium3DTileContentFactory.m3d = (tilesetParam, tileParam, resourceParam, arrayBufferParam, byteOffsetParam) => {
-                        return new MapGISM3DDataContent(tilesetParam, tileParam, resourceParam, arrayBufferParam, byteOffsetParam);
+                    Cesium.Cesium3DTileContentFactory.m3d = (
+                        tilesetParam,
+                        tileParam,
+                        resourceParam,
+                        arrayBufferParam,
+                        byteOffsetParam
+                    ) => {
+                        return new MapGISM3DDataContent(
+                            tilesetParam,
+                            tileParam,
+                            resourceParam,
+                            arrayBufferParam,
+                            byteOffsetParam
+                        );
                     };
                 }
                 const contentFactory = Cesium.Cesium3DTileContentFactory[magic];
@@ -1090,7 +1179,8 @@ export default class MapGISM3D {
                 let content;
 
                 // Vector and Geometry tile rendering do not support the skip LOD optimization.
-                tileset._disableSkipLevelOfDetail = tileset._disableSkipLevelOfDetail || magic === 'vctr' || magic === 'geom';
+                tileset._disableSkipLevelOfDetail =
+                    tileset._disableSkipLevelOfDetail || magic === 'vctr' || magic === 'geom';
 
                 if (Cesium.defined(contentFactory)) {
                     content = contentFactory(tileset, that, that._contentResource, arrayBuffer, 0);
@@ -1158,7 +1248,10 @@ export default class MapGISM3D {
         const tileset = this._tileset;
         const { clippingPlanes } = tileset;
         if (Cesium.defined(clippingPlanes) && clippingPlanes.enabled) {
-            const intersection = clippingPlanes.computeIntersectionWithBoundingVolume(boundingVolume, tileset.clippingPlanesOriginMatrix);
+            const intersection = clippingPlanes.computeIntersectionWithBoundingVolume(
+                boundingVolume,
+                tileset.clippingPlanesOriginMatrix
+            );
             this._isClipped = intersection !== Cesium.Intersect.INSIDE;
             if (intersection === Cesium.Intersect.OUTSIDE) {
                 return Cesium.CullingVolume.MASK_OUTSIDE;
@@ -1198,7 +1291,10 @@ export default class MapGISM3D {
         const tileset = this._tileset;
         const { clippingPlanes } = tileset;
         if (Cesium.defined(clippingPlanes) && clippingPlanes.enabled) {
-            const intersection = clippingPlanes.computeIntersectionWithBoundingVolume(boundingVolume, tileset.clippingPlanesOriginMatrix);
+            const intersection = clippingPlanes.computeIntersectionWithBoundingVolume(
+                boundingVolume,
+                tileset.clippingPlanesOriginMatrix
+            );
             this._isClipped = intersection !== Cesium.Intersect.INSIDE;
             if (intersection === Cesium.Intersect.OUTSIDE) {
                 return Cesium.Intersect.OUTSIDE;
@@ -1232,7 +1328,11 @@ export default class MapGISM3D {
     distanceToTileCenter(frameState) {
         const tileBoundingVolume = getBoundingVolume(this, frameState);
         const { boundingVolume } = tileBoundingVolume; // Gets the underlying OrientedBoundingBox or BoundingSphere
-        const toCenter = Cesium.Cartesian3.subtract(boundingVolume.center, frameState.camera.positionWC, scratchToTileCenter);
+        const toCenter = Cesium.Cartesian3.subtract(
+            boundingVolume.center,
+            frameState.camera.positionWC,
+            scratchToTileCenter
+        );
         return Cesium.Cartesian3.dot(frameState.camera.directionWC, toCenter);
     }
 
@@ -1296,17 +1396,30 @@ export default class MapGISM3D {
         // Update the bounding volumes
         const header = this._header;
         const { content } = this._header;
-        this._boundingVolume = this.createBoundingVolume(header.boundingVolume, this.computedTransform, this._boundingVolume);
+        this._boundingVolume = this.createBoundingVolume(
+            header.boundingVolume,
+            this.computedTransform,
+            this._boundingVolume
+        );
         if (Cesium.defined(this._contentBoundingVolume)) {
-            this._contentBoundingVolume = this.createBoundingVolume(content.boundingVolume, this.computedTransform, this._contentBoundingVolume);
+            this._contentBoundingVolume = this.createBoundingVolume(
+                content.boundingVolume,
+                this.computedTransform,
+                this._contentBoundingVolume
+            );
         }
         if (Cesium.defined(this._viewerRequestVolume)) {
-            this._viewerRequestVolume = this.createBoundingVolume(header.viewerRequestVolume, this.computedTransform, this._viewerRequestVolume);
+            this._viewerRequestVolume = this.createBoundingVolume(
+                header.viewerRequestVolume,
+                this.computedTransform,
+                this._viewerRequestVolume
+            );
         }
 
         // Destroy the debug bounding volumes. They will be generated fresh.
         this._debugBoundingVolume = this._debugBoundingVolume && this._debugBoundingVolume.destroy();
-        this._debugContentBoundingVolume = this._debugContentBoundingVolume && this._debugContentBoundingVolume.destroy();
+        this._debugContentBoundingVolume =
+            this._debugContentBoundingVolume && this._debugContentBoundingVolume.destroy();
         this._debugViewerRequestVolume = this._debugViewerRequestVolume && this._debugViewerRequestVolume.destroy();
     }
 
@@ -1392,12 +1505,32 @@ export default class MapGISM3D {
 
         // Map 0-1 then convert to digit. Include a distance sort when doing non-skipLOD and replacement refinement, helps things like non-skipLOD photogrammetry
         const useDistance = !tileset._skipLevelOfDetail && this.refine === Cesium.Cesium3DTileRefine.REPLACE;
-        const normalizedPreferredSorting = useDistance ? priorityNormalizeAndClamp(this._priorityHolder._distanceToCamera, minimumPriority.distance, maximumPriority.distance) : priorityNormalizeAndClamp(this._priorityReverseScreenSpaceError, minimumPriority.reverseScreenSpaceError, maximumPriority.reverseScreenSpaceError);
-        const preferredSortingDigits = isolateDigits(normalizedPreferredSorting, preferredSortingDigitsCount, preferredSortingLeftShift);
+        const normalizedPreferredSorting = useDistance
+            ? priorityNormalizeAndClamp(
+                  this._priorityHolder._distanceToCamera,
+                  minimumPriority.distance,
+                  maximumPriority.distance
+              )
+            : priorityNormalizeAndClamp(
+                  this._priorityReverseScreenSpaceError,
+                  minimumPriority.reverseScreenSpaceError,
+                  maximumPriority.reverseScreenSpaceError
+              );
+        const preferredSortingDigits = isolateDigits(
+            normalizedPreferredSorting,
+            preferredSortingDigitsCount,
+            preferredSortingLeftShift
+        );
 
-        const preloadProgressiveResolutionDigits = this._priorityProgressiveResolution ? 0 : preloadProgressiveResolutionScale;
+        const preloadProgressiveResolutionDigits = this._priorityProgressiveResolution
+            ? 0
+            : preloadProgressiveResolutionScale;
 
-        const normalizedFoveatedFactor = priorityNormalizeAndClamp(this._priorityHolder._foveatedFactor, minimumPriority.foveatedFactor, maximumPriority.foveatedFactor);
+        const normalizedFoveatedFactor = priorityNormalizeAndClamp(
+            this._priorityHolder._foveatedFactor,
+            minimumPriority.foveatedFactor,
+            maximumPriority.foveatedFactor
+        );
         const foveatedDigits = isolateDigits(normalizedFoveatedFactor, foveatedDigitsCount, foveatedLeftShift);
 
         const foveatedDeferDigits = this.priorityDeferred ? foveatedDeferScale : 0;
@@ -1405,7 +1538,13 @@ export default class MapGISM3D {
         const preloadFlightDigits = tileset._pass === Cesium.Cesium3DTilePass.PRELOAD_FLIGHT ? 0 : preloadFlightScale;
 
         // Get the final base 10 number
-        this._priority = depthDigits + preferredSortingDigits + preloadProgressiveResolutionDigits + foveatedDigits + foveatedDeferDigits + preloadFlightDigits;
+        this._priority =
+            depthDigits +
+            preferredSortingDigits +
+            preloadProgressiveResolutionDigits +
+            foveatedDigits +
+            foveatedDeferDigits +
+            preloadFlightDigits;
     }
 
     /**
@@ -1422,9 +1561,11 @@ export default class MapGISM3D {
     destroy() {
         // For the interval between new content being requested and downloaded, expiredContent === content, so don't destroy twice
         this._content = this._content && this._content.destroy();
-        this._expiredContent = this._expiredContent && !this._expiredContent.isDestroyed() && this._expiredContent.destroy();
+        this._expiredContent =
+            this._expiredContent && !this._expiredContent.isDestroyed() && this._expiredContent.destroy();
         this._debugBoundingVolume = this._debugBoundingVolume && this._debugBoundingVolume.destroy();
-        this._debugContentBoundingVolume = this._debugContentBoundingVolume && this._debugContentBoundingVolume.destroy();
+        this._debugContentBoundingVolume =
+            this._debugContentBoundingVolume && this._debugContentBoundingVolume.destroy();
         this._debugViewerRequestVolume = this._debugViewerRequestVolume && this._debugViewerRequestVolume.destroy();
         return Cesium.destroyObject(this);
     }

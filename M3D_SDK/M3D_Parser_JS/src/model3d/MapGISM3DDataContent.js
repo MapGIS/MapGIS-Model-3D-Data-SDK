@@ -1,4 +1,4 @@
-import { CesiumZondy } from './core/Base';
+import { CesiumZondy } from '../core/Base';
 import MapGISM3DPointCloud from './MapGISM3DPointCloud';
 
 // // Bail out if the browser doesn't support typed arrays, to prevent the setup function
@@ -16,7 +16,10 @@ function getBatchIdAttributeName(gltf) {
     if (!Cesium.defined(batchIdAttributeName)) {
         batchIdAttributeName = Cesium.ModelUtility.getAttributeOrUniformBySemantic(gltf, 'BATCHID');
         if (Cesium.defined(batchIdAttributeName)) {
-            Cesium.deprecationWarning('m3d-legacy-batchid', 'The glTF in this m3d uses the semantic `BATCHID`. Application-specific semantics should be prefixed with an underscore: `_BATCHID`.');
+            Cesium.deprecationWarning(
+                'm3d-legacy-batchid',
+                'The glTF in this m3d uses the semantic `BATCHID`. Application-specific semantics should be prefixed with an underscore: `_BATCHID`.'
+            );
         }
     }
     return batchIdAttributeName;
@@ -31,10 +34,17 @@ function getVertexShaderCallback(contentParam) {
         const { gltf } = content._model;
         if (Cesium.defined(gltf)) {
             content._batchIdAttributeName = getBatchIdAttributeName(gltf);
-            content._diffuseAttributeOrUniformName[programId] = Cesium.ModelUtility.getDiffuseAttributeOrUniform(gltf, programId);
+            content._diffuseAttributeOrUniformName[programId] = Cesium.ModelUtility.getDiffuseAttributeOrUniform(
+                gltf,
+                programId
+            );
         }
 
-        const callback = batchTable.getVertexShaderCallback(handleTranslucent, content._batchIdAttributeName, content._diffuseAttributeOrUniformName[programId]);
+        const callback = batchTable.getVertexShaderCallback(
+            handleTranslucent,
+            content._batchIdAttributeName,
+            content._diffuseAttributeOrUniformName[programId]
+        );
         return Cesium.defined(callback) ? callback(vs) : vs;
     };
 }
@@ -47,9 +57,15 @@ function getFragmentShaderCallback(contentParam) {
 
         const { gltf } = content._model;
         if (Cesium.defined(gltf)) {
-            content._diffuseAttributeOrUniformName[programId] = Cesium.ModelUtility.getDiffuseAttributeOrUniform(gltf, programId);
+            content._diffuseAttributeOrUniformName[programId] = Cesium.ModelUtility.getDiffuseAttributeOrUniform(
+                gltf,
+                programId
+            );
         }
-        const callback = batchTable.getFragmentShaderCallback(handleTranslucent, content._diffuseAttributeOrUniformName[programId]);
+        const callback = batchTable.getFragmentShaderCallback(
+            handleTranslucent,
+            content._diffuseAttributeOrUniformName[programId]
+        );
         return Cesium.defined(callback) ? callback(fs) : fs;
     };
 }
@@ -161,7 +177,11 @@ function updateModel(ownerParam, tileset, frameState) {
     // actually generate commands.
     owner._batchTable.update(tileset, frameState);
 
-    owner._contentModelMatrix = Cesium.Matrix4.multiply(owner._tile.computedTransform, owner._rtcCenterTransform, owner._contentModelMatrix);
+    owner._contentModelMatrix = Cesium.Matrix4.multiply(
+        owner._tile.computedTransform,
+        owner._rtcCenterTransform,
+        owner._contentModelMatrix
+    );
     owner._model.modelMatrix = owner._contentModelMatrix;
 
     owner._model.shadows = owner._tileset.shadows;
@@ -179,12 +199,17 @@ function updateModel(ownerParam, tileset, frameState) {
         // Dereference the clipping planes from the model if they are irrelevant.
         // Link/Dereference directly to avoid ownership checks.
         // This will also trigger synchronous shader regeneration to remove or add the clipping plane and color blending code.
-        owner._model._clippingPlanes = tilesetClippingPlanes.enabled && owner._tile._isClipped ? tilesetClippingPlanes : undefined;
+        owner._model._clippingPlanes =
+            tilesetClippingPlanes.enabled && owner._tile._isClipped ? tilesetClippingPlanes : undefined;
     }
 
     // If the model references a different ClippingPlaneCollection due to the tileset's collection being replaced with a
     // ClippingPlaneCollection that gives this tile the same clipping status, update the model to use the new ClippingPlaneCollection.
-    if (Cesium.defined(tilesetClippingPlanes) && Cesium.defined(owner._model._clippingPlanes) && owner._model._clippingPlanes !== tilesetClippingPlanes) {
+    if (
+        Cesium.defined(tilesetClippingPlanes) &&
+        Cesium.defined(owner._model._clippingPlanes) &&
+        owner._model._clippingPlanes !== tilesetClippingPlanes
+    ) {
         owner._model._clippingPlanes = tilesetClippingPlanes;
     }
 
@@ -215,7 +240,11 @@ function updateModel(ownerParam, tileset, frameState) {
 
     // If any commands were pushed, add derived commands
     const commandEnd = frameState.commandList.length;
-    if (commandStart < commandEnd && (frameState.passes.render || frameState.passes.pick) && !Cesium.defined(tileset.classificationType)) {
+    if (
+        commandStart < commandEnd &&
+        (frameState.passes.render || frameState.passes.pick) &&
+        !Cesium.defined(tileset.classificationType)
+    ) {
         owner._batchTable.addDerivedCommands(frameState, commandStart);
     }
 }
@@ -245,12 +274,17 @@ function updateInstance(ownerParam, tileset, frameState) {
         if (Cesium.defined(tilesetClippingPlanes) && owner._tile.clippingPlanesDirty) {
             // Dereference the clipping planes from the model if they are irrelevant - saves on shading
             // Link/Dereference directly to avoid ownership checks.
-            model._clippingPlanes = tilesetClippingPlanes.enabled && owner._tile._isClipped ? tilesetClippingPlanes : undefined;
+            model._clippingPlanes =
+                tilesetClippingPlanes.enabled && owner._tile._isClipped ? tilesetClippingPlanes : undefined;
         }
 
         // If the model references a different ClippingPlaneCollection due to the tileset's collection being replaced with a
         // ClippingPlaneCollection that gives owner tile the same clipping status, update the model to use the new ClippingPlaneCollection.
-        if (Cesium.defined(tilesetClippingPlanes) && Cesium.defined(model._clippingPlanes) && model._clippingPlanes !== tilesetClippingPlanes) {
+        if (
+            Cesium.defined(tilesetClippingPlanes) &&
+            Cesium.defined(model._clippingPlanes) &&
+            model._clippingPlanes !== tilesetClippingPlanes
+        ) {
             model._clippingPlanes = tilesetClippingPlanes;
         }
     }
@@ -288,9 +322,15 @@ function updatePointCloud(ownerParam, tileset, frameState) {
 
     let boundingSphere;
     if (Cesium.defined(tile._contentBoundingVolume)) {
-        boundingSphere = mode === Cesium.SceneMode.SCENE3D ? tile._contentBoundingVolume.boundingSphere : tile._contentBoundingVolume2D.boundingSphere;
+        boundingSphere =
+            mode === Cesium.SceneMode.SCENE3D
+                ? tile._contentBoundingVolume.boundingSphere
+                : tile._contentBoundingVolume2D.boundingSphere;
     } else {
-        boundingSphere = mode === Cesium.SceneMode.SCENE3D ? tile._boundingVolume.boundingSphere : tile._boundingVolume2D.boundingSphere;
+        boundingSphere =
+            mode === Cesium.SceneMode.SCENE3D
+                ? tile._boundingVolume.boundingSphere
+                : tile._boundingVolume2D.boundingSphere;
     }
 
     const styleDirty = owner._styleDirty;
@@ -415,7 +455,10 @@ export default class MapGISM3DDataContent {
             batchTableBinaryByteLength = 0;
             featureTableJsonByteLength = 0;
             featureTableBinaryByteLength = 0;
-            MapGISM3DDataContent._deprecationWarning('b3dm-legacy-header', 'This b3dm header is using the legacy format [batchLength] [batchTableByteLength]. The new format is [featureTableJsonByteLength] [featureTableBinaryByteLength] [batchTableJsonByteLength] [batchTableBinaryByteLength] from https://github.com/AnalyticalGraphicsInc/3d-tiles/blob/master/TileFormats/Batched3DModel/README.md.');
+            MapGISM3DDataContent._deprecationWarning(
+                'b3dm-legacy-header',
+                'This b3dm header is using the legacy format [batchLength] [batchTableByteLength]. The new format is [featureTableJsonByteLength] [featureTableBinaryByteLength] [batchTableJsonByteLength] [batchTableBinaryByteLength] from https://github.com/AnalyticalGraphicsInc/3d-tiles/blob/master/TileFormats/Batched3DModel/README.md.'
+            );
         } else if (batchTableBinaryByteLength >= 570425344) {
             // Second legacy check
             byteOffset -= sizeOfUint32;
@@ -424,7 +467,10 @@ export default class MapGISM3DDataContent {
             batchTableBinaryByteLength = featureTableBinaryByteLength;
             featureTableJsonByteLength = 0;
             featureTableBinaryByteLength = 0;
-            MapGISM3DDataContent._deprecationWarning('b3dm-legacy-header', 'This b3dm header is using the legacy format [batchTableJsonByteLength] [batchTableBinaryByteLength] [batchLength]. The new format is [featureTableJsonByteLength] [featureTableBinaryByteLength] [batchTableJsonByteLength] [batchTableBinaryByteLength] from https://github.com/AnalyticalGraphicsInc/3d-tiles/blob/master/TileFormats/Batched3DModel/README.md.');
+            MapGISM3DDataContent._deprecationWarning(
+                'b3dm-legacy-header',
+                'This b3dm header is using the legacy format [batchTableJsonByteLength] [batchTableBinaryByteLength] [batchLength]. The new format is [featureTableJsonByteLength] [featureTableBinaryByteLength] [batchTableJsonByteLength] [batchTableBinaryByteLength] from https://github.com/AnalyticalGraphicsInc/3d-tiles/blob/master/TileFormats/Batched3DModel/README.md.'
+            );
         }
 
         let featureTableJson;
@@ -433,7 +479,11 @@ export default class MapGISM3DDataContent {
                 BATCH_LENGTH: Cesium.defaultValue(batchLength, 0)
             };
         } else {
-            const featureTableString = Cesium.getStringFromTypedArray(uint8Array, byteOffset, featureTableJsonByteLength);
+            const featureTableString = Cesium.getStringFromTypedArray(
+                uint8Array,
+                byteOffset,
+                featureTableJsonByteLength
+            );
             featureTableJson = JSON.parse(featureTableString);
             byteOffset += featureTableJsonByteLength;
         }
@@ -476,7 +526,13 @@ export default class MapGISM3DDataContent {
             return;
         }
 
-        const batchTable = new Cesium.Cesium3DTileBatchTable(content, batchLength, batchTableJson, batchTableBinary, colorChangedCallback);
+        const batchTable = new Cesium.Cesium3DTileBatchTable(
+            content,
+            batchLength,
+            batchTableJson,
+            batchTableBinary,
+            colorChangedCallback
+        );
         content._batchTable = batchTable;
         // hys  获取gltf的长度
         const gltfByteLength = byteStart + allLength - byteOffset;
@@ -505,10 +561,17 @@ export default class MapGISM3DDataContent {
         content._rtcCenterTransform = Cesium.Matrix4.clone(Cesium.Matrix4.IDENTITY);
         const rtcCenter = featureTable.getGlobalProperty('RTC_CENTER', Cesium.ComponentDatatype.FLOAT, 3);
         if (Cesium.defined(rtcCenter)) {
-            content._rtcCenterTransform = Cesium.Matrix4.fromTranslation(Cesium.Cartesian3.fromArray(rtcCenter), content._rtcCenterTransform);
+            content._rtcCenterTransform = Cesium.Matrix4.fromTranslation(
+                Cesium.Cartesian3.fromArray(rtcCenter),
+                content._rtcCenterTransform
+            );
         }
 
-        content._contentModelMatrix = Cesium.Matrix4.multiply(parentNode.computedTransform, content._rtcCenterTransform, new Cesium.Matrix4());
+        content._contentModelMatrix = Cesium.Matrix4.multiply(
+            parentNode.computedTransform,
+            content._rtcCenterTransform,
+            new Cesium.Matrix4()
+        );
 
         if (!Cesium.defined(tileset.classificationType)) {
             // PERFORMANCE_IDEA: patch the shader on demand, e.g., the first time show/color changes.
@@ -598,7 +661,9 @@ export default class MapGISM3DDataContent {
 
         const gltfFormat = view.getUint32(byteOffset, true);
         if (gltfFormat !== 1 && gltfFormat !== 0) {
-            throw new Cesium.RuntimeError(`Only glTF format 0 (uri) or 1 (embedded) are supported. Format ${gltfFormat} is not.`);
+            throw new Cesium.RuntimeError(
+                `Only glTF format 0 (uri) or 1 (embedded) are supported. Format ${gltfFormat} is not.`
+            );
         }
         byteOffset += sizeOfUint32;
 
@@ -636,7 +701,12 @@ export default class MapGISM3DDataContent {
             }
         }
 
-        content._batchTable = new Cesium.Cesium3DTileBatchTable(content, instancesLength, batchTableJson, batchTableBinary);
+        content._batchTable = new Cesium.Cesium3DTileBatchTable(
+            content,
+            instancesLength,
+            batchTableJson,
+            batchTableBinary
+        );
 
         const gltfByteLength = byteStart + allLength - byteOffset;
         if (gltfByteLength === 0) {
@@ -648,7 +718,10 @@ export default class MapGISM3DDataContent {
             gltfView = new Uint8Array(arrayBuffer, byteOffset, gltfByteLength);
         } else {
             // Create a copy of the glb so that it is 4-byte aligned
-            MapGISM3DDataContent._deprecationWarning('i3dm-glb-unaligned', 'The embedded glb is not aligned to a 4-byte boundary.');
+            MapGISM3DDataContent._deprecationWarning(
+                'i3dm-glb-unaligned',
+                'The embedded glb is not aligned to a 4-byte boundary.'
+            );
             gltfView = new Uint8Array(uint8Array.subarray(byteOffset, byteOffset + gltfByteLength));
         }
 
@@ -685,7 +758,9 @@ export default class MapGISM3DDataContent {
             // fgy 兼容请求地址
             const resource = content._resource;
             if (resource.url.indexOf('igs/rest/g3d') > 0) {
-                const urlGlb = `${resource.url.substring(0, resource.url.lastIndexOf('&dataName=') + 10) + encodeURIComponent(gltfUrl)}&webGL=true&compress=false`;
+                const urlGlb = `${
+                    resource.url.substring(0, resource.url.lastIndexOf('&dataName=') + 10) + encodeURIComponent(gltfUrl)
+                }&webGL=true&compress=false`;
                 gltfUrl = urlGlb;
             } else {
                 const url = gltfUrl.substring(4);
@@ -717,17 +792,37 @@ export default class MapGISM3DDataContent {
             let position = featureTable.getProperty('POSITION', Cesium.ComponentDatatype.FLOAT, 3, i, propertyScratch1);
             if (!Cesium.defined(position)) {
                 position = instancePositionArray;
-                const positionQuantized = featureTable.getProperty('POSITION_QUANTIZED', Cesium.ComponentDatatype.UNSIGNED_SHORT, 3, i, propertyScratch1);
+                const positionQuantized = featureTable.getProperty(
+                    'POSITION_QUANTIZED',
+                    Cesium.ComponentDatatype.UNSIGNED_SHORT,
+                    3,
+                    i,
+                    propertyScratch1
+                );
                 if (!Cesium.defined(positionQuantized)) {
-                    throw new Cesium.RuntimeError('Either POSITION or POSITION_QUANTIZED must be defined for each instance.');
+                    throw new Cesium.RuntimeError(
+                        'Either POSITION or POSITION_QUANTIZED must be defined for each instance.'
+                    );
                 }
-                const quantizedVolumeOffset = featureTable.getGlobalProperty('QUANTIZED_VOLUME_OFFSET', Cesium.ComponentDatatype.FLOAT, 3);
+                const quantizedVolumeOffset = featureTable.getGlobalProperty(
+                    'QUANTIZED_VOLUME_OFFSET',
+                    Cesium.ComponentDatatype.FLOAT,
+                    3
+                );
                 if (!Cesium.defined(quantizedVolumeOffset)) {
-                    throw new Cesium.RuntimeError('Global property: QUANTIZED_VOLUME_OFFSET must be defined for quantized positions.');
+                    throw new Cesium.RuntimeError(
+                        'Global property: QUANTIZED_VOLUME_OFFSET must be defined for quantized positions.'
+                    );
                 }
-                const quantizedVolumeScale = featureTable.getGlobalProperty('QUANTIZED_VOLUME_SCALE', Cesium.ComponentDatatype.FLOAT, 3);
+                const quantizedVolumeScale = featureTable.getGlobalProperty(
+                    'QUANTIZED_VOLUME_SCALE',
+                    Cesium.ComponentDatatype.FLOAT,
+                    3
+                );
                 if (!Cesium.defined(quantizedVolumeScale)) {
-                    throw new Cesium.RuntimeError('Global property: QUANTIZED_VOLUME_SCALE must be defined for quantized positions.');
+                    throw new Cesium.RuntimeError(
+                        'Global property: QUANTIZED_VOLUME_SCALE must be defined for quantized positions.'
+                    );
                 }
                 for (let j = 0; j < 3; j += 1) {
                     position[j] = (positionQuantized[j] / 65535.0) * quantizedVolumeScale[j] + quantizedVolumeOffset[j];
@@ -739,7 +834,13 @@ export default class MapGISM3DDataContent {
             }
             instanceTranslationRotationScale.translation = instancePosition;
 
-            const rotarion = featureTable.getProperty('ROTATION', Cesium.ComponentDatatype.FLOAT, 4, i, propertyScratch1);
+            const rotarion = featureTable.getProperty(
+                'ROTATION',
+                Cesium.ComponentDatatype.FLOAT,
+                4,
+                i,
+                propertyScratch1
+            );
             const rotationCar4 = new Cesium.Cartesian4();
             Cesium.Cartesian4.unpack(rotarion, 0, rotationCar4);
             instanceQuaternion.w = rotationCar4.w;
@@ -754,7 +855,13 @@ export default class MapGISM3DDataContent {
             if (Cesium.defined(scale)) {
                 Cesium.Cartesian3.multiplyByScalar(instanceScale, scale, instanceScale);
             }
-            const nonUniformScale = featureTable.getProperty('SCALE_NON_UNIFORM', Cesium.ComponentDatatype.FLOAT, 3, i, propertyScratch1);
+            const nonUniformScale = featureTable.getProperty(
+                'SCALE_NON_UNIFORM',
+                Cesium.ComponentDatatype.FLOAT,
+                3,
+                i,
+                propertyScratch1
+            );
             if (Cesium.defined(nonUniformScale)) {
                 instanceScale.x *= nonUniformScale[0];
                 instanceScale.y *= nonUniformScale[1];
@@ -998,7 +1105,9 @@ export default class MapGISM3DDataContent {
         // >>includeStart('debug', pragmas.debug);
         const { featuresLength } = this;
         if (!Cesium.defined(batchId) || batchId < 0 || batchId >= featuresLength) {
-            throw new Cesium.DeveloperError(`batchId is required and between zero and featuresLength - 1 (${featuresLength - 1}).`);
+            throw new Cesium.DeveloperError(
+                `batchId is required and between zero and featuresLength - 1 (${featuresLength - 1}).`
+            );
         }
         // >>includeEnd('debug');
 
@@ -1028,7 +1137,9 @@ export default class MapGISM3DDataContent {
             if (this.featuresLength === 0) {
                 const hasColorStyle = Cesium.defined(style) && Cesium.defined(style.color);
                 const hasShowStyle = Cesium.defined(style) && Cesium.defined(style.show);
-                this._model.color = hasColorStyle ? style.color.evaluateColor(undefined, scratchColor) : Cesium.Color.WHITE;
+                this._model.color = hasColorStyle
+                    ? style.color.evaluateColor(undefined, scratchColor)
+                    : Cesium.Color.WHITE;
                 this._model.show = hasShowStyle ? style.show.evaluate(undefined) : true;
             } else {
                 this._batchTable.applyStyle(style);

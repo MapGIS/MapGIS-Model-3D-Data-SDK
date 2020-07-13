@@ -4,7 +4,7 @@
 
 module.exports = {
     // 超过最大值换行
-    printWidth: 1500,
+    printWidth: 120,
 
     // 缩进为4个空格
     tabWidth: 4,
