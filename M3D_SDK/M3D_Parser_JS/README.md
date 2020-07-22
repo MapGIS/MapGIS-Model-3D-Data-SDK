@@ -19,7 +19,7 @@ npm run release  // 编译压缩版本代码
 npm run debug // 编译调试版本代码
 
 // 启动服务
-node server.js
+npm run dev
 
 ```
 

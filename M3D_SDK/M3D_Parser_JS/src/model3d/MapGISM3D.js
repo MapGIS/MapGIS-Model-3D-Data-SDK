@@ -1232,6 +1232,28 @@ export default class MapGISM3D {
         return true;
     }
 
+    unloadContent() {
+        if (this.hasEmptyContent || this.hasTilesetContent) {
+            return;
+        }
+
+        this._content = this._content && this._content.destroy();
+        this._contentState = Cesium.Cesium3DTileContentState.UNLOADED;
+        this._contentReadyToProcessPromise = undefined;
+        this._contentReadyPromise = undefined;
+
+        this.lastStyleTime = 0.0;
+        this.clippingPlanesDirty = this._clippingPlanesState === 0;
+        this._clippingPlanesState = 0;
+
+        this._debugColorizeTiles = false;
+
+        this._debugBoundingVolume = this._debugBoundingVolume && this._debugBoundingVolume.destroy();
+        this._debugContentBoundingVolume =
+            this._debugContentBoundingVolume && this._debugContentBoundingVolume.destroy();
+        this._debugViewerRequestVolume = this._debugViewerRequestVolume && this._debugViewerRequestVolume.destroy();
+    }
+
     /**
      * Determines whether the tile's bounding volume intersects the culling volume.
      *

@@ -76,4 +76,4 @@
 
 客户端：[WebClient-JavaScript](https://github.com/MapGIS/WebClient-JavaScript), [WebClient-JavaScript-Plugin](https://github.com/MapGIS/WebClient-JavaScript-Plugin), [MapGIS-Desktop-Java](https://github.com/MapGIS/MapGIS-Desktop-Java), [MapGIS-Mobile-React-Native](https://github.com/MapGIS/MapGIS-Mobile-React-Native)
 
-SDK：M3D_SDK
+SDK：[M3D_SDK](./M3D_SDK)

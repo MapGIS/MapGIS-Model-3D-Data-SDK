@@ -381,7 +381,7 @@ function createResources(pointCloudParam, frameState) {
         let attributeLocation = numberOfAttributes;
 
         // for (const name in styleableProperties) {
-        styleableProperties.forEach((name) => {
+        Object.getOwnPropertyNames(styleableProperties).forEach((name) => {
             // if (styleableProperties.hasOwnProperty(name)) {
             if (Object.prototype.hasOwnProperty.call(styleableProperties, name)) {
                 const property = styleableProperties[name];
@@ -710,7 +710,7 @@ function getStyleableProperties(source, properties) {
 }
 
 function getVertexAttribute(vertexArray, index) {
-    const { numberOfAttributesParam } = vertexArray;
+    const numberOfAttributesParam = vertexArray.numberOfAttributes;
     for (let i = 0; i < numberOfAttributesParam; i += 1) {
         const attribute = vertexArray.getAttribute(i);
         if (attribute.index === index) {
@@ -818,7 +818,7 @@ function createShaders(pointCloudParam, frameState, style) {
     // Disable vertex attributes that aren't used in the style, enable attributes that are
     const styleableShaderAttributes = pointCloud._styleableShaderAttributes;
     // for (name in styleableShaderAttributes) {
-    styleableShaderAttributes.forEach((key) => {
+    Object.getOwnPropertyNames(styleableShaderAttributes).forEach((key) => {
         // if (styleableShaderAttributes.hasOwnProperty(key)) {
         if (Object.prototype.hasOwnProperty.call(styleableShaderAttributes, key)) {
             attribute = styleableShaderAttributes[key];
@@ -1104,7 +1104,7 @@ function decodeDraco(pointCloudParam, context) {
                     let { styleableProperties } = parsedContent;
                     const { batchTableProperties } = draco;
                     // for (const name in batchTableProperties) {
-                    batchTableProperties.forEach((name) => {
+                    Object.getOwnPropertyNames(batchTableProperties).forEach((name) => {
                         // if (batchTableProperties.hasOwnProperty(name)) {
                         if (Object.prototype.hasOwnProperty.call(batchTableProperties, name)) {
                             const property = result[name];
