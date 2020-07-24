@@ -7,7 +7,7 @@ const url = require('url');
 const request = require('request');
 const yargs = require('yargs').options({
     port: {
-        default: 8080,
+        default: 8888,
         description: 'Port to listen on.'
     },
     public: {

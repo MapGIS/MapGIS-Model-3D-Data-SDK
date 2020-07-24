@@ -1,4 +1,5 @@
 import { CesiumZondy } from '../core/Base';
+import { Zlib } from '../thirdParty/inflate.min';
 import MapGISM3DDataContent from './MapGISM3DDataContent';
 
 const { deprecationWarning } = Cesium;
@@ -1148,14 +1149,25 @@ export default class MapGISM3D {
         const contentFailedFunction = getContentFailedFunction(this);
 
         promise
-            .then((arrayBuffer) => {
+            .then((arrayBufferResult) => {
                 if (that.isDestroyed()) {
                     // Tile is unloaded before the content finishes loading
                     contentFailedFunction();
                     return;
                 }
-                const uint8Array = new Uint8Array(arrayBuffer);
+                let arrayBuffer = arrayBufferResult;
+                let uint8Array = new Uint8Array(arrayBuffer);
                 let magic = Cesium.getMagic(uint8Array);
+
+                if (magic === 'zipx') {
+                    uint8Array = uint8Array.slice(3);
+
+                    const inflator = new Zlib.Inflate(uint8Array);
+                    const inflated = inflator.decompress();
+
+                    arrayBuffer = inflated.buffer;
+                }
+
                 magic = 'm3d';
                 if (!Cesium.defined(Cesium.Cesium3DTileContentFactory.m3d)) {
                     Cesium.Cesium3DTileContentFactory.m3d = (
