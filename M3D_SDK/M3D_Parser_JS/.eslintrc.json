@@ -29,7 +29,7 @@
         "Cesium": "readonly"
     },
     // 设置插件
-    "plugins": ["transform-object-rest-spread"],
+    "plugins": [],
 
     // 设置解析器选项（必须设置这个属性）
     "parserOptions": {
