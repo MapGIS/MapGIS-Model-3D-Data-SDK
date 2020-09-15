@@ -28,19 +28,28 @@
                 overflow: hidden;
             }
         </style>
-        <div id="cesiumContainer" class="fullSize"></div>
+        <div id="cesiumContainer" class="fullSize">
+        </div>
         <script id="cesium_sandcastle_script">
+
             function startup(Cesium) {
                 'use strict';
 
-                const viewer = new Cesium.Viewer('cesiumContainer', {
-                    terrainExaggeration: 1,
-                    requestRenderMode: true,
-                    animation: false,
-                    timeline: false
-                });
+                // const viewer = new Cesium.Viewer('cesiumContainer', {
+                //     terrainExaggeration: 1,
+                //     requestRenderMode: true,
+                //     animation: false,
+                //     timeline: false
+                // });
+                var webGlobe = new Cesium.WebSceneControl('cesiumContainer', {
+                        terrainExaggeration: 1,
+                        requestRenderMode: true
+                    });
+                const viewer = webGlobe.viewer;
+                webGlobe.showPosition();
+                viewer.clock.shouldAnimate = true;
 
-                viewer.scene.globe.show = false;
+                viewer.scene.globe.show = true;
 
                 // 设置太阳时间
                 const utc = Cesium.JulianDate.fromDate(new Date("2019/10/04 16:00:00"));//UTC
@@ -66,9 +75,11 @@
 
                 // 加载文件服务数据
                 let url = './data/景观_建筑模型/景观_建筑模型.mcj';
+                 url = './data/m3d-sample/m3d-sample.mcj';
                 CesiumZondy.M3D.appendM3D(viewer, url, 'file', {
                     maximumScreenSpaceError: 16
                 });
+                // webGlobe.flyTo(114.33,30.5,200,2);
 
                 // 加载igs服务数据
                 // url = 'http://develop.smaryun.com:6163/igs/rest/g3d/ZondyModels';

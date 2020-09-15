@@ -10,7 +10,7 @@ function zoomToM3dLayer(viewer, layer) {
 
 function appendM3DLayer(viewer, baseUrl, renderIndex, layerIndex, gdbpUrl, visible, igserver, options) {
     const dataUrl = `${baseUrl}/GetDataStreams?sceneIndex=0&layerIndex=${renderIndex}&Level=0&Row=0&Col=0`;
-    const showBoundingVolume = Cesium.defaultValue(options.debugShowBoundingVolume, false);
+    const showBoundingVolume = Cesium.defaultValue(options.debugShowBoundingVolume, true);
     const maxScreenError = Cesium.defaultValue(options.maximumScreenSpaceError, 16);
     const debugShowMemoryUsage = Cesium.defaultValue(options.debugShowMemoryUsage, false);
     const debugShowUrl = Cesium.defaultValue(options.debugShowUrl, false);
@@ -80,7 +80,7 @@ function loadM3DByFile(viewer, options) {
             viewer.camera.lookAtTransform(Cesium.Matrix4.IDENTITY);
             const cartographic = Cesium.Cartographic.fromCartesian(layer.boundingSphere.center);
             const surface = Cesium.Cartesian3.fromRadians(cartographic.longitude, cartographic.latitude, 0.0);
-            const offset = Cesium.Cartesian3.fromRadians(cartographic.longitude, cartographic.latitude, -0.5);
+            const offset = Cesium.Cartesian3.fromRadians(cartographic.longitude, cartographic.latitude, 0.0);
             const translation = Cesium.Cartesian3.subtract(offset, surface, new Cesium.Cartesian3());
             const tmpLayer = layer;
             tmpLayer.modelMatrix = Cesium.Matrix4.fromTranslation(translation);

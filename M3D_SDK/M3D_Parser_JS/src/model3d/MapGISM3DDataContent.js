@@ -370,7 +370,7 @@ export default class MapGISM3DDataContent {
         this._model = undefined;
         this._batchTable = undefined;
         this._features = undefined;
-
+        debugger
         // Populate from gltf when available
         this._batchIdAttributeName = undefined;
         this._diffuseAttributeOrUniformName = {};
@@ -409,36 +409,40 @@ export default class MapGISM3DDataContent {
         const { content } = param;
         const { byteStart } = param;
         const { allLength } = param;
+        const { indexJson } = param;
 
         // 读取json索引的长度
-        const jsonIndexLength = view.getUint32(byteOffset, true);
-        byteOffset += sizeOfUint32;
-        let indexJson;
-        if (jsonIndexLength > 0) {
-            const jsonIndexString = Cesium.getStringFromTypedArray(uint8Array, byteOffset, jsonIndexLength);
-            byteOffset += jsonIndexLength;
-            indexJson = JSON.parse(jsonIndexString);
-            // 加载子节点
+        // const jsonIndexLength = view.getUint32(byteOffset, true);
+        // byteOffset += sizeOfUint32;
+        // let indexJson;
+        if(Cesium.defined(indexJson)){
             tileset.loadChildTileSet(resource, indexJson, parentNode);
         }
+        // if (jsonIndexLength > 0) {
+        //     const jsonIndexString = Cesium.getStringFromTypedArray(uint8Array, byteOffset, jsonIndexLength);
+        //     byteOffset += jsonIndexLength;
+        //     indexJson = JSON.parse(jsonIndexString);
+        //     // 加载子节点
+        //     tileset.loadChildTileSet(resource, indexJson, parentNode);
+        // }
         // 索引后续长度用于数据校验--暂时不用
         // 韩彦生 添加标识符  如果没有数据直接去掉后面的gltf 添加noda  如果没有数据直接return
         // let dataType = view.getUint32(byteOffset, true);
 
         // let byteLength = view.getUint32(byteOffset, true);
-        byteOffset += sizeOfUint32;
+        // byteOffset += sizeOfUint32;
 
-        let featureTableJsonByteLength = view.getUint32(byteOffset, true);
-        byteOffset += sizeOfUint32;
+        let featureTableJsonByteLength = 0;//view.getUint32(byteOffset, true);
+        // byteOffset += sizeOfUint32;
 
-        let featureTableBinaryByteLength = view.getUint32(byteOffset, true);
-        byteOffset += sizeOfUint32;
+        let featureTableBinaryByteLength =0; //view.getUint32(byteOffset, true);
+        // byteOffset += sizeOfUint32;
 
-        let batchTableJsonByteLength = view.getUint32(byteOffset, true);
-        byteOffset += sizeOfUint32;
+        let batchTableJsonByteLength = 0; //view.getUint32(byteOffset, true);
+        // byteOffset += sizeOfUint32;
 
-        let batchTableBinaryByteLength = view.getUint32(byteOffset, true);
-        byteOffset += sizeOfUint32;
+        let batchTableBinaryByteLength = 0;//view.getUint32(byteOffset, true);
+        // byteOffset += sizeOfUint32;
 
         let batchLength;
         // Legacy header #1: [batchLength] [batchTableByteLength]
@@ -521,10 +525,10 @@ export default class MapGISM3DDataContent {
         if (Cesium.defined(tileset.classificationType)) {
             colorChangedCallback = createColorChangedCallback(content);
         }
-        const typeString = Cesium.getStringFromTypedArray(uint8Array, byteOffset, 4);
-        if (typeString.toLowerCase() !== 'gltf') {
-            return;
-        }
+       // const typeString = Cesium.getStringFromTypedArray(uint8Array, byteOffset, 4);
+        // if (typeString.toLowerCase() !== 'gltf') {
+        //     return;
+        // }
 
         const batchTable = new Cesium.Cesium3DTileBatchTable(
             content,
@@ -546,7 +550,9 @@ export default class MapGISM3DDataContent {
         let gltfView;
         // hys 校验四字节对齐
         if (byteOffset % 4 === 0) {
-            gltfView = new Uint8Array(arrayBuffer, byteOffset, gltfByteLength);
+            // gltfView = new Uint8Array(arrayBuffer, byteOffset, gltfByteLength);
+            gltfView = new Uint8Array(arrayBuffer, byteOffset, arrayBuffer.byteLength);
+            // gltfView = Cesium.getStringFromTypedArray(gltfView);
         } else {
             // Create a copy of the glb so that it is 4-byte aligned
             MapGISM3DDataContent._deprecationWarning('字节对齐', '数据应该按4字节对齐');
@@ -596,9 +602,9 @@ export default class MapGISM3DDataContent {
                 addBatchIdToGeneratedShaders: batchLength > 0, // If the batch table has values in it, generated shaders will need a batchId attribute
                 pickObject,
                 imageBasedLightingFactor: tileset.imageBasedLightingFactor,
-                lightColor: tileset.lightColor,
+                lightColor: tileset.lightColor
                 // qwk 拆分后，此处需要格外注意，原生Cesium中并没有此项属性
-                analyPass: Cesium.Pass.ATAD_D3M
+                // analyPass: Cesium.Pass.ATAD_D3M
             });
         } else {
             // 此转码 glTF 为几何的内部表示形式, 因此我们可以利用向量数据的重新批处理。
@@ -904,17 +910,18 @@ export default class MapGISM3DDataContent {
 
         const uint8Array = new Uint8Array(arrayBuffer);
         const view = new DataView(arrayBuffer);
-        byteOffset += sizeOfUint32; // Skip magic
+        // byteOffset += sizeOfUint32; // Skip magic
         // 韩彦生  这里需要在m3d后面添加一个版本号 也便于缓存文件是否清理的标识  这里读到的第一个长度为整个文件的长度
-        const version = view.getUint32(byteOffset, true);
-        if (version !== 1) {
-            throw new Cesium.RuntimeError(`${'数据版本太旧, 当前数据版本为：'}${version}`);
-        }
-        byteOffset += sizeOfUint32;
+        // const version = view.getUint32(byteOffset, true);
+        // if (version !== 1) {
+        //     throw new Cesium.RuntimeError(`${'数据版本太旧, 当前数据版本为：'}${version}`);
+        // }
+        // byteOffset += sizeOfUint32;
 
         // 数据类型
         const dataType = view.getUint32(byteOffset, true);
-        byteOffset += sizeOfUint32;
+        // byteOffset += sizeOfUint32;
+        // const dataType =  ;
 
         const param = {};
         param.view = view;
@@ -926,6 +933,7 @@ export default class MapGISM3DDataContent {
         param.arrayBuffer = arrayBuffer;
         param.content = content;
         param.byteStart = byteStart;
+        param.indexJson = parentNode._indexJson;
 
         // 文件总长度
         let allLength = 0;
