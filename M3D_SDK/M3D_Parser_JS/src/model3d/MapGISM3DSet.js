@@ -1434,8 +1434,8 @@ export default class MapGISM3DSet {
 
                 // fgy根据点和包围盒计算transforms
                 that._geoBox =  tilesetJson.geoBox;
-                that._transform = Cesium.Transforms.eastNorthUpToFixedFrame(Cesium.Cartesian3.fromDegrees(tilesetJson.position.x, tilesetJson.position.y,tilesetJson.position.z));
-                console.log(modelMatrix1);
+                that._transform = Cesium.Transforms.eastNorthUpToFixedFrame(Cesium.Cartesian3.fromDegrees(tilesetJson.position.x, tilesetJson.position.y,0.0));
+                console.log(that._transform);
                 // that._transform =  [
                 //     -0.9111876562460904,
                 //     -0.41199157164286329,
@@ -2173,7 +2173,17 @@ export default class MapGISM3DSet {
         }
 
         const statistics = this._statistics;
+        Object.extend(indexJson,{
+            boundingVolume:parentNode._header.boundingVolume
+            });
+        var rootTile = new MapGISM3D(this,m3dSetResource,indexJson,parentNode);
+        
+        if(Cesium.defined(parentNode)){
+            parentNode.children.push(rootTile);
+            rootTile.depth = parentNode.depth + 1;
+        }
         const stack = [];
+        // stack.push(rootTile);
         stack.push({
             header: indexJson.children, // 这里后面直接就是children
             tile3D: parentNode
@@ -2182,21 +2192,46 @@ export default class MapGISM3DSet {
         while (stack.length > 0) {
             const tile = stack.pop();
             // let tile3D = tile.tile3D;
-            const children = tile.header;
+            var children = tile.header;
+            // const { children } = tile._header;
             if (Cesium.defined(children)) {
                 const { length } = children;
                 for (let i = 0; i < length; i += 1) {
                     const childHeader = children[i];
                     //if (parentNode.childrenNameList.indexOf(childHeader.content.uri) <= -1) {
                         // 暂时解决缺块
-                        if (childHeader.geometricError < this._baseMinError) {
-                            childHeader.geometricError = 0;
+                        if (childHeader.lodError < this._baseMinError) {
+                            childHeader.lodError = 0;
                         }
+                         Object.extend(childHeader,{
+                        // boundingVolume:{
+                        //     geoBox:childHeader._geoBox
+                        // },
+                        // boundingVolume: {
+                            // region: [
+                            //     1.9954349994659424,
+                            //     0.5323253273963928,
+                            //     1.9954394102096558,
+                            //     0.532336413860321,
+                            //     0.0,
+                            //     15.327899932861329
+                            // ]
+                            // regionBox: [
+                            //     -3.552713678800501e-14,
+                            //     -0.00000286102294921875,
+                            //     0.0,
+                            //     23.904619216918947,
+                            //     69.44810485839844,
+                            //     15.327899932861329
+                            // ]
+                        // },
+                        refine:'REPLACE'});
+                        
                         const childTile = new MapGISM3D(this, m3dSetResource, childHeader, parentNode);
                         // tile3D.children.push(childTile);
                         // childTile._depth = tile3D._depth + 1;
-                        parentNode.children.push(childTile);
-                        parentNode.childrenNameList.push(childHeader.uri);
+                        rootTile.children.push(childTile);
+                        rootTile.childrenNameList.push(childHeader.uri);
                         childTile._depth = parentNode._depth + 1;
                         statistics.numberOfTilesTotal += 1;
                         stack.push({
@@ -2278,22 +2313,23 @@ export default class MapGISM3DSet {
                     geoBox:this._geoBox
                 },
                 // boundingVolume: {
-            //     region: [
-            //         1.9954349994659424,
-            //         0.5323253273963928,
-            //         1.9954394102096558,
-            //         0.532336413860321,
-            //         0.0,
-            //         15.327899932861329
-            //     ],
-            //     regionBox: [
-            //         -3.552713678800501e-14,
-            //         -0.00000286102294921875,
-            //         0.0,
-            //         23.904619216918947,
-            //         69.44810485839844,
-            //         15.327899932861329
-            //     ]},
+                    // region: [
+                    //     1.9954349994659424,
+                    //     0.5323253273963928,
+                    //     1.9954394102096558,
+                    //     0.532336413860321,
+                    //     0.0,
+                    //     15.327899932861329
+                    // ]
+                    // regionBox: [
+                    //     -3.552713678800501e-14,
+                    //     -0.00000286102294921875,
+                    //     0.0,
+                    //     23.904619216918947,
+                    //     69.44810485839844,
+                    //     15.327899932861329
+                    // ]
+                // },
                 refine:'REPLACE'});
         
         rootNodeJson.transform = this._transform;
@@ -2315,23 +2351,25 @@ export default class MapGISM3DSet {
                 const { length } = childrenNode;
                 for (let i = 0; i < length; i += 1) {
                     const childHeader = childrenNode[i];
-                    // Object.extend(childHeader,{boundingVolume: {
-                    //     region: [
-                    //             1.9954349994659424,
-                    //             0.5323253273963928,
-                    //             1.995436429977417,
-                    //             0.532336413860321,
-                    //             0.0,
-                    //             15.327899932861329
-                    //         ],
-                    //         regionBox: [
-                    //             -3.552713678800501e-14,
-                    //             -0.00000286102294921875,
-                    //             0.0,
-                    //             7.298200607299805,
-                    //             69.44810485839844,
-                    //             15.327899932861329
-                    // ]}})
+                    // Object.extend(childHeader,{
+                    //     boundingVolume: {
+                    //         region: [
+                    //                 1.9954349994659424,
+                    //                 0.5323253273963928,
+                    //                 1.995436429977417,
+                    //                 0.532336413860321,
+                    //                 0.0,
+                    //                 15.327899932861329
+                    //             ]
+                    //         // regionBox: [
+                    //         //     -3.552713678800501e-14,
+                    //         //     -0.00000286102294921875,
+                    //         //     0.0,
+                    //         //     7.298200607299805,
+                    //         //     69.44810485839844, 
+                    //         //     15.327899932861329]
+                    //     }
+                    // });
                     Object.extend(childHeader,{boundingVolume: {geoBox:childHeader.geoBox}});
                     const childTile = new MapGISM3D(this, dataSetResource, childHeader, tile);
                     tile.children.push(childTile);

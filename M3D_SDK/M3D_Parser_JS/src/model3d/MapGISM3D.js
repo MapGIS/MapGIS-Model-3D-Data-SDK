@@ -3,6 +3,7 @@ import { CesiumZondy } from '../core/Base';
 // import { Zlib } from '../thirdParty/inflate.min';
 import { Zlib } from '../thirdParty/unzip.min';
 import MapGISM3DDataContent from './MapGISM3DDataContent';
+import MapGISM3DTileContent from './MapGISM3DTileContent';
 
 const { deprecationWarning } = Cesium;
 
@@ -1137,38 +1138,37 @@ export default class MapGISM3D {
             return false;
         }
 
-        if (!this._requestNode) {
-            const resourceJson = Cesium.Resource.createIfNeeded(this._contentResource._url);
-            // this._requestNode = true; 
-            resourceJson.fetchJson().then((node) => {
-                this._requestNode = true;
-                var url = resourceJson.url;
-                url = url.substring(0, url.lastIndexOf('/') + 1);
-                url += node.uri;
-                this._contentResource._url = url;
+        // if (!this._requestNode) {
+        //     const resourceJson = Cesium.Resource.createIfNeeded(this._contentResource._url);
+        //     // this._requestNode = true; 
+        //     resourceJson.fetchJson().then((node) => {
+        //         this._requestNode = true;
+        //         var url = resourceJson.url;
+        //         url = url.substring(0, url.lastIndexOf('/') + 1);
+        //         url += node.uri;
+        //         this._contentResource._url = url;
 
-                // var children = {
-                //     boundingVolume: {
-                //         region: [1.9954349994659424,
-                //             0.5323253273963928,
-                //             1.995436429977417,
-                //             0.532336413860321,
-                //             0,
-                //             15.327899932861328]
-                //     }
-                // };
-                
-                if (Cesium.defined(node.childrenNode)) {
-                    var children = {boundingVolume:{geoBox:node.childrenNode[0].geoBox }}
-                    Object.extend(node.childrenNode[0], children);
-                    this._indexJson = { children: node.childrenNode };
-                }
-                // tileset.loadChildTileSet(resource, indexJson, parentNode);
-            }).otherwise((error) => {
-                this._requestNode = false;
-            });
-            return false;
-        }
+        //         if (Cesium.defined(node.childrenNode)) {
+        //             // var children = {
+        //             //     boundingVolume: {
+        //             //         region: [1.9954349994659424,
+        //             //             0.5323253273963928,
+        //             //             1.995436429977417,
+        //             //             0.532336413860321,
+        //             //             0,
+        //             //             15.327899932861328]
+        //             //     }
+        //             // };
+        //             var children = {boundingVolume:{geoBox:node.childrenNode[0].geoBox }}
+        //             Object.extend(node.childrenNode[0], children);
+        //             this._indexJson = { children: node.childrenNode };
+        //         }
+        //         // tileset.loadChildTileSet(resource, indexJson, parentNode);
+        //     }).otherwise((error) => {
+        //         this._requestNode = false;
+        //     });
+        //     return false;
+        // }
 
         const resource = this._contentResource.clone();
         const expired = this.contentExpired;
@@ -1241,15 +1241,12 @@ export default class MapGISM3D {
                             arrayBuffer = files[filenames[i]].buffer;
                         }
                     }
-
                     // const inflator = new Zlib.Inflate(uint8Array);
                     // const inflated = inflator.decompress();
-
                     // arrayBuffer = inflated.buffer;
-
+                    magic = 'm3d';
                 }
-
-                magic = 'md';
+               
                 if (!Cesium.defined(Cesium.Cesium3DTileContentFactory.md)) {
                     Cesium.Cesium3DTileContentFactory.m3d = (
                         tilesetParam,
@@ -1277,9 +1274,13 @@ export default class MapGISM3D {
                 if (Cesium.defined(contentFactory)) {
                     content = contentFactory(tileset, that, that._contentResource, arrayBuffer, 0);
                 } else {
+                    //解析nodeJson
+                    var indexJson = Cesium.getStringFromTypedArray(uint8Array);
+                    content = new MapGISM3DTileContent(tileset,that,that._contentResource,arrayBuffer,0);
+                    
+                    // tileset.loadChildTileSet(resource, indexJson, parentNode);
                     // 此处单独创建 M3D 数据对象，不从 Factory 中获取
-                    content = new MapGISM3DDataContent(tileset, that, that._contentResource, arrayBuffer, 0);
-
+                    // content = new MapGISM3DDataContent(tileset, that, that._contentResource, arrayBuffer, 0);
                     that.hasTilesetContent = true;
                 }
                 that._content = content;
