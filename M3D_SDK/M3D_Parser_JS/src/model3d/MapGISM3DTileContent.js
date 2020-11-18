@@ -66,11 +66,16 @@ export default class MapGISM3DTileContent{
             Object.extend(tilesetJson.childrenNode[0], children);
             tilesetJson.children = tilesetJson.childrenNode;
          }
-         var url = this._resource.url;
-         url = url.substring(0, url.lastIndexOf('/') + 1);
-         url += tilesetJson.uri;
-         this._resource._url = url;
-        content._tileset.loadChildTileSet(content._resource, tilesetJson, content._tile);
+        //  var url = this._resource.url;
+        //  url = url.substring(0, url.lastIndexOf('/') + 1);
+        //  url += tilesetJson.uri;
+        //  this._resource._url = url;
+         Object.extend(tilesetJson, {
+            boundingVolume: content._tile._header.boundingVolume,
+            refine: 'REPLACE'
+        });
+        content._tileset.loadM3DDataSet(content._resource, tilesetJson, content._tile);
+        // content._tileset.loadChildTileSet(content._resource, tilesetJson, content._tile);
         content._readyPromise.resolve(content);
     }
 

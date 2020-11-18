@@ -184,57 +184,57 @@ function updateModel(ownerParam, tileset, frameState) {
     );
     owner._model.modelMatrix = owner._contentModelMatrix;
 
-    owner._model.shadows = owner._tileset.shadows;
-    owner._model.imageBasedLightingFactor = owner._tileset.imageBasedLightingFactor;
-    owner._model.lightColor = owner._tileset.lightColor;
-    owner._model.luminanceAtZenith = owner._tileset.luminanceAtZenith;
-    owner._model.sphericalHarmonicCoefficients = owner._tileset.sphericalHarmonicCoefficients;
-    owner._model.specularEnvironmentMaps = owner._tileset.specularEnvironmentMaps;
-    owner._model.debugWireframe = owner._tileset.debugWireframe;
+    // owner._model.shadows = owner._tileset.shadows;
+    // owner._model.imageBasedLightingFactor = owner._tileset.imageBasedLightingFactor;
+    // owner._model.lightColor = owner._tileset.lightColor;
+    // owner._model.luminanceAtZenith = owner._tileset.luminanceAtZenith;
+    // owner._model.sphericalHarmonicCoefficients = owner._tileset.sphericalHarmonicCoefficients;
+    // owner._model.specularEnvironmentMaps = owner._tileset.specularEnvironmentMaps;
+    // owner._model.debugWireframe = owner._tileset.debugWireframe;
 
     // Update clipping planes
-    const tilesetClippingPlanes = owner._tileset.clippingPlanes;
-    owner._model.clippingPlanesOriginMatrix = owner._tileset.clippingPlanesOriginMatrix;
-    if (Cesium.defined(tilesetClippingPlanes) && owner._tile.clippingPlanesDirty) {
-        // Dereference the clipping planes from the model if they are irrelevant.
-        // Link/Dereference directly to avoid ownership checks.
-        // This will also trigger synchronous shader regeneration to remove or add the clipping plane and color blending code.
-        owner._model._clippingPlanes =
-            tilesetClippingPlanes.enabled && owner._tile._isClipped ? tilesetClippingPlanes : undefined;
-    }
+    // const tilesetClippingPlanes = owner._tileset.clippingPlanes;
+    // owner._model.clippingPlanesOriginMatrix = owner._tileset.clippingPlanesOriginMatrix;
+    // if (Cesium.defined(tilesetClippingPlanes) && owner._tile.clippingPlanesDirty) {
+    //     // Dereference the clipping planes from the model if they are irrelevant.
+    //     // Link/Dereference directly to avoid ownership checks.
+    //     // This will also trigger synchronous shader regeneration to remove or add the clipping plane and color blending code.
+    //     owner._model._clippingPlanes =
+    //         tilesetClippingPlanes.enabled && owner._tile._isClipped ? tilesetClippingPlanes : undefined;
+    // }
 
     // If the model references a different ClippingPlaneCollection due to the tileset's collection being replaced with a
     // ClippingPlaneCollection that gives this tile the same clipping status, update the model to use the new ClippingPlaneCollection.
-    if (
-        Cesium.defined(tilesetClippingPlanes) &&
-        Cesium.defined(owner._model._clippingPlanes) &&
-        owner._model._clippingPlanes !== tilesetClippingPlanes
-    ) {
-        owner._model._clippingPlanes = tilesetClippingPlanes;
-    }
+    // if (
+    //     Cesium.defined(tilesetClippingPlanes) &&
+    //     Cesium.defined(owner._model._clippingPlanes) &&
+    //     owner._model._clippingPlanes !== tilesetClippingPlanes
+    // ) {
+    //     owner._model._clippingPlanes = tilesetClippingPlanes;
+    // }
 
-    // qwk -----------------------------------------------------
-    if (undefined !== tileset.u_height) {
-        owner._model.u_height = tileset.u_height;
-    }
-    if (undefined !== tileset.u_isFlatten) {
-        owner._model.u_isFlatten = tileset.u_isFlatten;
-    } else {
-        owner._model.u_isFlatten = false;
-    }
-    if (undefined !== tileset.u_arrayLength) {
-        owner._model.u_arrayLength = tileset.u_arrayLength;
-    }
-    if (undefined !== tileset.u_positionArray) {
-        owner._model.u_positionArray = tileset.u_positionArray;
-    }
-    // zlf --------------------------------------------------
-    if (undefined !== tileset.u_isAttributeFilter) {
-        owner._model.u_isAttributeFilter = tileset.u_isAttributeFilter;
-    }
-    if (undefined !== tileset.u_offset) {
-        owner._model.u_offset = tileset.u_offset;
-    }
+    // // qwk -----------------------------------------------------
+    // if (undefined !== tileset.u_height) {
+    //     owner._model.u_height = tileset.u_height;
+    // }
+    // if (undefined !== tileset.u_isFlatten) {
+    //     owner._model.u_isFlatten = tileset.u_isFlatten;
+    // } else {
+    //     owner._model.u_isFlatten = false;
+    // }
+    // if (undefined !== tileset.u_arrayLength) {
+    //     owner._model.u_arrayLength = tileset.u_arrayLength;
+    // }
+    // if (undefined !== tileset.u_positionArray) {
+    //     owner._model.u_positionArray = tileset.u_positionArray;
+    // }
+    // // zlf --------------------------------------------------
+    // if (undefined !== tileset.u_isAttributeFilter) {
+    //     owner._model.u_isAttributeFilter = tileset.u_isAttributeFilter;
+    // }
+    // if (undefined !== tileset.u_offset) {
+    //     owner._model.u_offset = tileset.u_offset;
+    // }
 
     owner._model.update(frameState);
 
@@ -257,37 +257,37 @@ function updateInstance(ownerParam, tileset, frameState) {
     // the content's resource loading.  In the READY state, it will
     // actually generate commands.
     owner._batchTable.update(tileset, frameState);
-    owner._modelInstanceCollection.modelMatrix = owner._tile.computedTransform;
-    owner._modelInstanceCollection.shadows = owner._tileset.shadows;
-    owner._modelInstanceCollection.lightColor = owner._tileset.lightColor;
-    owner._modelInstanceCollection.luminanceAtZenith = owner._tileset.luminanceAtZenith;
-    owner._modelInstanceCollection.sphericalHarmonicCoefficients = owner._tileset.sphericalHarmonicCoefficients;
-    owner._modelInstanceCollection.specularEnvironmentMaps = owner._tileset.specularEnvironmentMaps;
-    owner._modelInstanceCollection.debugWireframe = owner._tileset.debugWireframe;
+    // owner._modelInstanceCollection.modelMatrix = owner._tile.computedTransform;
+    // owner._modelInstanceCollection.shadows = owner._tileset.shadows;
+    // owner._modelInstanceCollection.lightColor = owner._tileset.lightColor;
+    // owner._modelInstanceCollection.luminanceAtZenith = owner._tileset.luminanceAtZenith;
+    // owner._modelInstanceCollection.sphericalHarmonicCoefficients = owner._tileset.sphericalHarmonicCoefficients;
+    // owner._modelInstanceCollection.specularEnvironmentMaps = owner._tileset.specularEnvironmentMaps;
+    // owner._modelInstanceCollection.debugWireframe = owner._tileset.debugWireframe;
 
     const model = owner._modelInstanceCollection._model;
 
-    if (Cesium.defined(model)) {
-        // Update for clipping planes
-        const tilesetClippingPlanes = owner._tileset.clippingPlanes;
-        model.clippingPlanesOriginMatrix = owner._tileset.clippingPlanesOriginMatrix;
-        if (Cesium.defined(tilesetClippingPlanes) && owner._tile.clippingPlanesDirty) {
-            // Dereference the clipping planes from the model if they are irrelevant - saves on shading
-            // Link/Dereference directly to avoid ownership checks.
-            model._clippingPlanes =
-                tilesetClippingPlanes.enabled && owner._tile._isClipped ? tilesetClippingPlanes : undefined;
-        }
+    // if (Cesium.defined(model)) {
+    //     // Update for clipping planes
+    //     const tilesetClippingPlanes = owner._tileset.clippingPlanes;
+    //     model.clippingPlanesOriginMatrix = owner._tileset.clippingPlanesOriginMatrix;
+    //     if (Cesium.defined(tilesetClippingPlanes) && owner._tile.clippingPlanesDirty) {
+    //         // Dereference the clipping planes from the model if they are irrelevant - saves on shading
+    //         // Link/Dereference directly to avoid ownership checks.
+    //         model._clippingPlanes =
+    //             tilesetClippingPlanes.enabled && owner._tile._isClipped ? tilesetClippingPlanes : undefined;
+    //     }
 
-        // If the model references a different ClippingPlaneCollection due to the tileset's collection being replaced with a
-        // ClippingPlaneCollection that gives owner tile the same clipping status, update the model to use the new ClippingPlaneCollection.
-        if (
-            Cesium.defined(tilesetClippingPlanes) &&
-            Cesium.defined(model._clippingPlanes) &&
-            model._clippingPlanes !== tilesetClippingPlanes
-        ) {
-            model._clippingPlanes = tilesetClippingPlanes;
-        }
-    }
+    //     // If the model references a different ClippingPlaneCollection due to the tileset's collection being replaced with a
+    //     // ClippingPlaneCollection that gives owner tile the same clipping status, update the model to use the new ClippingPlaneCollection.
+    //     if (
+    //         Cesium.defined(tilesetClippingPlanes) &&
+    //         Cesium.defined(model._clippingPlanes) &&
+    //         model._clippingPlanes !== tilesetClippingPlanes
+    //     ) {
+    //         model._clippingPlanes = tilesetClippingPlanes;
+    //     }
+    // }
 
     owner._modelInstanceCollection.update(frameState);
 
@@ -525,10 +525,7 @@ export default class MapGISM3DDataContent {
         if (Cesium.defined(tileset.classificationType)) {
             colorChangedCallback = createColorChangedCallback(content);
         }
-       // const typeString = Cesium.getStringFromTypedArray(uint8Array, byteOffset, 4);
-        // if (typeString.toLowerCase() !== 'gltf') {
-        //     return;
-        // }
+    
 
         const batchTable = new Cesium.Cesium3DTileBatchTable(
             content,
@@ -538,13 +535,12 @@ export default class MapGISM3DDataContent {
             colorChangedCallback
         );
         content._batchTable = batchTable;
-        // hys  获取gltf的长度
         const gltfByteLength = byteStart + allLength - byteOffset;
         if (gltfByteLength === 0) {
             throw new Cesium.RuntimeError('模型数据长度为0.');
         }
         if (gltfByteLength < 240) {
-            // return;
+            // reurn;
         }
 
         let gltfView;
@@ -559,10 +555,10 @@ export default class MapGISM3DDataContent {
             gltfView = new Uint8Array(uint8Array.subarray(byteOffset, byteOffset + gltfByteLength));
         }
 
-        const pickObject = {
-            content,
-            primitive: tileset
-        };
+        // const pickObject = {
+        //     content,
+        //     primitive: tileset
+        // };
 
         content._rtcCenterTransform = Cesium.Matrix4.clone(Cesium.Matrix4.IDENTITY);
         const rtcCenter = featureTable.getGlobalProperty('RTC_CENTER', Cesium.ComponentDatatype.FLOAT, 3);
@@ -579,54 +575,31 @@ export default class MapGISM3DDataContent {
             new Cesium.Matrix4()
         );
 
-        if (!Cesium.defined(tileset.classificationType)) {
             // PERFORMANCE_IDEA: patch the shader on demand, e.g., the first time show/color changes.
             // The pick shader still needs to be patched.
-            content._model = new Cesium.Model({
-                gltf: gltfView,
-                cull: false, // The model is already culled by 3D Tiles
-                releaseGltfJson: true, // Models are unique and will not benefit from caching so save memory
-                opaquePass: Cesium.Pass.CESIUM_3D_TILE, // Draw opaque portions of the model during the 3D Tiles pass
-                basePath: resource,
-                requestType: Cesium.RequestType.TILES3D,
-                modelMatrix: content._contentModelMatrix,
-                upAxis: tileset._gltfUpAxis,
-                forwardAxis: Cesium.Axis.X,
-                shadows: tileset.shadows,
-                debugWireframe: tileset.debugWireframe,
-                incrementallyLoadTextures: false,
-                vertexShaderLoaded: getVertexShaderCallback(content),
-                fragmentShaderLoaded: getFragmentShaderCallback(content),
-                uniformMapLoaded: batchTable.getUniformMapCallback(),
-                pickIdLoaded: getPickIdCallback(content),
-                addBatchIdToGeneratedShaders: batchLength > 0, // If the batch table has values in it, generated shaders will need a batchId attribute
-                pickObject,
-                imageBasedLightingFactor: tileset.imageBasedLightingFactor,
-                lightColor: tileset.lightColor
-                // qwk 拆分后，此处需要格外注意，原生Cesium中并没有此项属性
-                // analyPass: Cesium.Pass.ATAD_D3M
-            });
-        } else {
-            // 此转码 glTF 为几何的内部表示形式, 因此我们可以利用向量数据的重新批处理。
-            // This transcodes glTF to an internal representation for geometry so we can take advantage of the re-batching of vector data.
-            // For a list of limitations on the input glTF, see the documentation for classificationType of Cesium3DTileset.
-            content._model = new Cesium.ClassificationModel({
-                gltf: gltfView,
-                cull: false, // The model is already culled by 3D Tiles
-                basePath: resource,
-                requestType: Cesium.RequestType.TILES3D,
-                modelMatrix: content._contentModelMatrix,
-                upAxis: tileset._gltfUpAxis,
-                forwardAxis: Cesium.Axis.X,
-                debugWireframe: tileset.debugWireframe,
-                vertexShaderLoaded: getVertexShaderCallback(content),
-                classificationShaderLoaded: getClassificationFragmentShaderCallback(content),
-                uniformMapLoaded: batchTable.getUniformMapCallback(),
-                pickIdLoaded: getPickIdCallback(content),
-                classificationType: tileset._classificationType,
-                batchTable
-            });
-        }
+        content._model = new Cesium.Model({
+            gltf: gltfView,
+            cull: false, // The model is already culled by 3D Tiles
+            releaseGltfJson: true, // Models are unique and will not benefit from caching so save memory
+            opaquePass: Cesium.Pass.CESIUM_3D_TILE, // Draw opaque portions of the model during the 3D Tiles pass
+            basePath: resource,
+            requestType: Cesium.RequestType.TILES3D,
+            modelMatrix: content._contentModelMatrix,
+            upAxis: tileset._gltfUpAxis,
+            forwardAxis: Cesium.Axis.X,
+            shadows: tileset.shadows,
+            debugWireframe: tileset.debugWireframe,
+            incrementallyLoadTextures: false,
+            vertexShaderLoaded: getVertexShaderCallback(content),
+            fragmentShaderLoaded: getFragmentShaderCallback(content),
+            uniformMapLoaded: batchTable.getUniformMapCallback(),
+            pickIdLoaded: getPickIdCallback(content),
+            addBatchIdToGeneratedShaders: batchLength > 0// If the batch table has values in it, generated shaders will need a batchId attribute
+            // pickObject,
+            // imageBasedLightingFactor: tileset.imageBasedLightingFactor,
+            // lightColor: tileset.lightColor
+        });
+
     }
 
     /**

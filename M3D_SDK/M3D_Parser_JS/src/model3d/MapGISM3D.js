@@ -576,24 +576,18 @@ export default class MapGISM3D {
 
         if (Cesium.defined(contentHeader)) {
             let contentHeaderUri = contentHeader;
-            // if (Cesium.defined(contentHeader.url)) {
-            //     MapGISM3D._deprecationWarning(
-            //         'contentUrl',
-            //         'This tileset JSON uses the "content.url" property which has been deprecated. Use "content.uri" instead.'
-            //     );
-            //     contentHeaderUri = contentHeader.url;
-            // }
 
             hasEmptyContent = false;
             contentState = Cesium.Cesium3DTileContentState.UNLOADED;
             if (!this._tileset._isIGServer) {
-                if (contentHeaderUri.indexOf('../') === 0) {
+                if (contentHeaderUri.indexOf('../') === 0 ) {
                     // 新数据路径
                     var tempUri = baseResource._url;
                     tempUri = tempUri.substring(0, tempUri.indexOf('node') + 5) + contentHeaderUri.substring(3);
                     baseResource._url = tempUri;
                     contentHeaderUri = contentHeaderUri.substring(5);
                 }
+
                 contentResource = baseResource.getDerivedResource({
                     url: contentHeaderUri
                 });
@@ -612,28 +606,20 @@ export default class MapGISM3D {
                 }
 
                 if (contentHeaderUri.indexOf('..') === 0) {
-                    // fgy 兼容优化后m3d数据请求地址
                     contentHeaderUri = contentHeaderUri.replace('..', 'data');
                 }
 
                 contentResource.url = contentResource.url.replace('datatype=10', 'datatype=11');
-                // 韩彦生 添加对m3d 地理服务图层的判断支持
                 if (this._tileset._isM3dDataServer > -1) {
-                    // contentHeaderUri = contentHeaderUri.replace('/','\\');
-                    // contentHeaderUri = contentHeaderUri.replace('/','\\');
-                    // contentResource.url = contentResource.url +'&dataName='+ encodeURIComponent(dataName +contentHeaderUri)+ '&compress=false';
-                    // contentResource.url = contentResource.url.replace('{dataName}',encodeURIComponent(dataName +contentHeaderUri)) ;///+ '&compress=false';
+                    contentResource.url.replace('{dataName}',encodeURIComponent(dataName +contentHeaderUri)) ;///+ '&compress=false';
                     contentResource.url = `${contentResource.url.substring(0, contentResource.url.lastIndexOf('&dataName=') + 10) +
                         encodeURIComponent(dataName + contentHeaderUri)
-                        }&webGL=true`; /// + '&compress=false';
+                        }&webGL=true`; 
                 } else {
-                    // contentResource._url = contentResource.url;//这里是为方便子节点使用
-                    // hys 对地址中有+ 等特殊字符的做编码处理 不然会把这些特殊字符漏掉 encodeURIComponent
                     contentResource.url = `${contentResource.url.substring(
                         0,
                         contentResource.url.lastIndexOf('datatype=') + 11
                     )}&dataName=${encodeURIComponent(dataName + contentHeaderUri)}&webGL=true&compress=false`;
-                    // contentResource.url = contentResource.url.replace('{dataName}', contentHeaderUrl);
                 }
             }
             serverKey = Cesium.RequestScheduler.getServerKey(contentResource.getUrlComponent());
@@ -1138,38 +1124,6 @@ export default class MapGISM3D {
             return false;
         }
 
-        // if (!this._requestNode) {
-        //     const resourceJson = Cesium.Resource.createIfNeeded(this._contentResource._url);
-        //     // this._requestNode = true; 
-        //     resourceJson.fetchJson().then((node) => {
-        //         this._requestNode = true;
-        //         var url = resourceJson.url;
-        //         url = url.substring(0, url.lastIndexOf('/') + 1);
-        //         url += node.uri;
-        //         this._contentResource._url = url;
-
-        //         if (Cesium.defined(node.childrenNode)) {
-        //             // var children = {
-        //             //     boundingVolume: {
-        //             //         region: [1.9954349994659424,
-        //             //             0.5323253273963928,
-        //             //             1.995436429977417,
-        //             //             0.532336413860321,
-        //             //             0,
-        //             //             15.327899932861328]
-        //             //     }
-        //             // };
-        //             var children = {boundingVolume:{geoBox:node.childrenNode[0].geoBox }}
-        //             Object.extend(node.childrenNode[0], children);
-        //             this._indexJson = { children: node.childrenNode };
-        //         }
-        //         // tileset.loadChildTileSet(resource, indexJson, parentNode);
-        //     }).otherwise((error) => {
-        //         this._requestNode = false;
-        //     });
-        //     return false;
-        // }
-
         const resource = this._contentResource.clone();
         const expired = this.contentExpired;
         if (expired) {
@@ -1219,17 +1173,7 @@ export default class MapGISM3D {
                 let magic = Cesium.getMagic(uint8Array);
 
                 if (magic === 'PK') {
-                    // uint8Array = uint8Array.slice(3);
-                    // function arrayBufferToBase64(buffer) {
-                    //     var binary = '';
-                    //     var bytes = new Uint8Array(buffer);
-                    //     var len = bytes.byteLength;
-                    //     for (var i = 0; i < len; i++) {
-                    //         binary += String.fromCharCode(bytes[i]);
-                    //     }
-                    //     return window.btoa(binary);
-                    //  }
-                    // var decodedData = arrayBufferToBase64(uint8Array);
+                   
                     var unzip = new Zlib.Unzip(uint8Array, {});
                     var files = {};
                     var filenames = unzip.getFilenames();
@@ -1237,8 +1181,12 @@ export default class MapGISM3D {
 
                     for (i = 0, il = filenames.length; i < il; ++i) {
                         files[filenames[i]] = unzip.decompress(filenames[i]);
-                        if (files[filenames[i]].length > 0) {
+                        if ( files[filenames[i]].length > 0) {
+                        // if (filenames[i].indexOf('glb') > 0 && files[filenames[i]].length > 0) {
                             arrayBuffer = files[filenames[i]].buffer;
+                            // let result = new Uint8Array(arrayBuffer);
+                            // arrayBuffer = result;
+                            break;
                         }
                     }
                     // const inflator = new Zlib.Inflate(uint8Array);
@@ -1274,19 +1222,14 @@ export default class MapGISM3D {
                 if (Cesium.defined(contentFactory)) {
                     content = contentFactory(tileset, that, that._contentResource, arrayBuffer, 0);
                 } else {
-                    //解析nodeJson
                     var indexJson = Cesium.getStringFromTypedArray(uint8Array);
                     content = new MapGISM3DTileContent(tileset,that,that._contentResource,arrayBuffer,0);
                     
-                    // tileset.loadChildTileSet(resource, indexJson, parentNode);
-                    // 此处单独创建 M3D 数据对象，不从 Factory 中获取
-                    // content = new MapGISM3DDataContent(tileset, that, that._contentResource, arrayBuffer, 0);
                     that.hasTilesetContent = true;
                 }
                 that._content = content;
                 that._contentState = Cesium.Cesium3DTileContentState.PROCESSING;
                 that._contentReadyToProcessPromise.resolve(content);
-                // 韩彦生
                 if (content.readyPromise === undefined) {
                     return;
                 }
@@ -1311,7 +1254,6 @@ export default class MapGISM3D {
                 });
             })
             .otherwise((error) => {
-                // debugger
                 if (request.state === Cesium.RequestState.CANCELLED) {
                     // Cancelled due to low priority - try again later.
                     that._contentState = contentState;

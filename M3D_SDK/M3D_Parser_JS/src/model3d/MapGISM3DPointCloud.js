@@ -416,7 +416,6 @@ function createResources(pointCloudParam, frameState) {
             }
         });
 
-        // }
     }
 
     const positionsVertexBuffer = Cesium.Buffer.createVertexBuffer({
