@@ -2,6 +2,7 @@ import { readSync } from 'fs';
 import { CesiumZondy } from '../core/Base';
 // import { Zlib } from '../thirdParty/inflate.min';
 import { Zlib } from '../thirdParty/unzip.min';
+import { inflate } from '../thirdParty/pako_inflate';
 import MapGISM3DDataContent from './MapGISM3DDataContent';
 import MapGISM3DTileContent from './MapGISM3DTileContent';
 
@@ -452,7 +453,8 @@ export default class MapGISM3D {
         let baseResource = baseResourceParam;
         this._tileset = tileset;
         this._header = header;
-        const contentHeader = header.uri;
+        let contentHeader = header.content;
+
         /**
          * The local transform of this tile.
          * @type {Matrix4}
@@ -503,7 +505,12 @@ export default class MapGISM3D {
          * @type {Number}
          * @readonly
          */
-        this.geometricError = header.lodError;
+        this.geometricError = header.geometricError;
+
+         if(tileset._version === '1.0'){
+            contentHeader = header.uri;
+            this.geometricError = header.lodError;
+        }
 
         if (!Cesium.defined(this.geometricError)) {
             this.geometricError = Cesium.defined(parent) ? parent.geometricError : tileset._geometricError;
@@ -576,11 +583,14 @@ export default class MapGISM3D {
 
         if (Cesium.defined(contentHeader)) {
             let contentHeaderUri = contentHeader;
+            if(Cesium.defined(contentHeaderUri.uri)){
+                contentHeaderUri = contentHeader.uri;
+            }
 
             hasEmptyContent = false;
             contentState = Cesium.Cesium3DTileContentState.UNLOADED;
             if (!this._tileset._isIGServer) {
-                if (contentHeaderUri.indexOf('../') === 0 ) {
+                if (this._tileset._version === '1.0' && contentHeaderUri.indexOf('../') === 0 ) {
                     // 新数据路径
                     var tempUri = baseResource._url;
                     tempUri = tempUri.substring(0, tempUri.indexOf('node') + 5) + contentHeaderUri.substring(3);
@@ -1182,19 +1192,18 @@ export default class MapGISM3D {
                     for (i = 0, il = filenames.length; i < il; ++i) {
                         files[filenames[i]] = unzip.decompress(filenames[i]);
                         if ( files[filenames[i]].length > 0) {
-                        // if (filenames[i].indexOf('glb') > 0 && files[filenames[i]].length > 0) {
                             arrayBuffer = files[filenames[i]].buffer;
-                            // let result = new Uint8Array(arrayBuffer);
-                            // arrayBuffer = result;
-                            break;
                         }
                     }
-                    // const inflator = new Zlib.Inflate(uint8Array);
-                    // const inflated = inflator.decompress();
-                    // arrayBuffer = inflated.buffer;
                     magic = 'm3d';
                 }
-               
+                if (magic === 'zipx') {
+                    uint8Array = uint8Array.slice(3);
+                    var inflator = inflate(uint8Array);
+                    arrayBuffer = inflator.buffer;
+                    magic = 'm3d';
+                }
+
                 if (!Cesium.defined(Cesium.Cesium3DTileContentFactory.md)) {
                     Cesium.Cesium3DTileContentFactory.m3d = (
                         tilesetParam,

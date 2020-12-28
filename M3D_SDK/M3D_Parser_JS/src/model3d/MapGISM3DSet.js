@@ -10,7 +10,6 @@ const scratchDirection = new Cesium.Cartesian3();
 
 const scratchStack = [];
 function unloadTile(tilesetParam, tile) {
-    // debugger;
     const tileset = tilesetParam;
     tileset.tileUnload.raiseEvent(tile);
     tileset._statistics.decrementLoadCounts(tile.content);
@@ -437,13 +436,6 @@ function updateTiles(tilesetParam, frameState, isRender) {
         if (isRender) {
             tileVisible.raiseEvent(tile);
         }
-        // begin判断进行偏移
-        //  let bd = tile.boundingSphere;
-        //  let center = bd.center;
-        //  let baozaoDistance = 400;
-        //  let  fDetal = (selectedLength - 1)*baozaoDistance *0.8;
-        //  let fZTrans = (selectedLength - i - 1)*baozaoDistance - fDetal;//最后一个没有移动
-        //  tile.transform = Matrix4.setTranslation(tile.transform,new Cartesian3(0,0,fZTrans),tile.transform);
 
         // end
         tile.update(tileset, frameState);
@@ -660,9 +652,7 @@ export default class MapGISM3DSet {
     constructor(options) {
         const optionsParam = Cesium.defaultValue(options, Cesium.defaultValue.EMPTY_OBJECT);
 
-        // >>includeStart('debug', pragmas.debug);
         Cesium.Check.defined('options.url', optionsParam.url);
-        // >>includeEnd('debug');
         this._url = undefined;
         this._basePath = undefined;
         this._root = undefined;
@@ -679,13 +669,10 @@ export default class MapGISM3DSet {
         this._selectedTilesToStyle = [];
         this._loadTimestamp = undefined;
         this._timeSinceLoad = 0.0;
-        // 是否是IGserver_isIGserver= optionsParam.igserver;
         this._isIGServer = Cesium.defaultValue(optionsParam.igserver, false);
-        // 以下内容 需要再docinfo返回值得到之后才能得到。
         this._layerRenderIndex = Cesium.defaultValue(optionsParam.layerRenderIndex, 0); // 渲染图层索引
         this._layerIndex = Cesium.defaultValue(optionsParam.layerIndex, 0); // 图层索引(用来标识组图层的概念)
         this._gdbpUrl = Cesium.defaultValue(optionsParam.gdbpUrl, ''); // 原始数据在gdb中的数据
-        // hys添加名称和Id的记录 一下内容只有去到数据才能获取的到
         this._name = undefined; // 图层名
         this._guid = undefined; // 图层的guid
         this._extLayer = undefined; // 这里先为 挂接单体化预留 用来绑定单体化所用到的附加图层
@@ -1194,13 +1181,13 @@ export default class MapGISM3DSet {
          * @type {Boolean}
          * @default false
          */
-        // this.loadSiblings = Cesium.defaultValue(optionsParam.loadSiblings, false);
+        this.loadSiblings = Cesium.defaultValue(optionsParam.loadSiblings, false);
 
-        // this._clippingPlanes = undefined;
-        // this.clippingPlanes = optionsParam.clippingPlanes;
+        this._clippingPlanes = undefined;
+        this.clippingPlanes = optionsParam.clippingPlanes;
 
-        // this._imageBasedLightingFactor = new Cesium.Cartesian2(1.0, 1.0);
-        // Cesium.Cartesian2.clone(optionsParam.imageBasedLightingFactor, this._imageBasedLightingFactor);
+        this._imageBasedLightingFactor = new Cesium.Cartesian2(1.0, 1.0);
+        Cesium.Cartesian2.clone(optionsParam.imageBasedLightingFactor, this._imageBasedLightingFactor);
 
         /**
          * The color and intensity of the sunlight used to shade a model.
@@ -1374,7 +1361,6 @@ export default class MapGISM3DSet {
          */
         // this.debugShowUrl = Cesium.defaultValue(optionsParam.debugShowUrl, false);
         this._credits = undefined;
-        // hys 添加判断是否为m3d服务图层
         this._isM3dDataServer = -1;
 
         this.loadConfig(optionsParam.url);
@@ -1411,17 +1397,14 @@ export default class MapGISM3DSet {
         let tilesetResource;
         Cesium.when(url)
             .then((urlParam) => {
-                // let basePath;
                 const resource = Cesium.Resource.createIfNeeded(urlParam);
                 that._isM3dDataServer = urlParam.lastIndexOf('/cache/');
 
-                // ion resources have a credits property we can use for additional attribution.
                 that._credits = resource.credits;
 
                 tilesetResource = resource;
                 if (that._isIGServer) {
                     that._basePath = tilesetResource.url;
-                    // 添加对单独m3d服务的解析
                     if (that._isM3dDataServer > -1) {
                         tilesetResource.url += '?dataName=M3dTopInfoData&webGL=true';
                     } else {
@@ -1441,27 +1424,43 @@ export default class MapGISM3DSet {
                 that._url = resource.url;
                 that._tilesetUrl = tilesetResource.url;
 
-                // We don't know the distance of the tileset until tileset.json is loaded, so use the default distance for now
                 return MapGISM3DSet.loadJson(tilesetResource);
             })
             .then((tilesetJson) => {
                 tilesetResource.url = tilesetResource.url.replace('M3dTopInfoData', '{dataName}');
-                // that._geoBox = tilesetJson.geoBox;
-                that._transform = Cesium.Transforms.eastNorthUpToFixedFrame(Cesium.Cartesian3.fromDegrees(tilesetJson.position.x, tilesetJson.position.y, 0.0));
-
-                //准备好json上的信息:=================
-                Object.extend(tilesetJson, {
-                    boundingVolume: {
-                        geoBox: tilesetJson.geoBox
-                    },
-                    refine: 'REPLACE'
-                });
-                tilesetJson.transform = that._transform;
-                //========================================
-                that._root = that.loadM3DDataSet(tilesetResource, tilesetJson);
-
+                let boundingVolume = undefined;
+                if(!Cesium.defined(tilesetJson.version)){
+                     that._version = '0.0';
+                }
+                else{
+                     that._version = tilesetJson.version;
+                }
+               
+                if(that._version === '1.0'){
+                    console.log(that._version);
+                    that._transform = Cesium.Transforms.eastNorthUpToFixedFrame(Cesium.Cartesian3.fromDegrees(tilesetJson.position.x, tilesetJson.position.y, 0.0));
+                    Object.extend(tilesetJson, {
+                        boundingVolume: {
+                            geoBox: tilesetJson.geoBox
+                        },
+                        refine: 'REPLACE'
+                    });
+                    tilesetJson.transform = that._transform;
+                    that._root = that.loadM3DTileSet(tilesetResource, tilesetJson);
+                    boundingVolume = that._root.createBoundingVolume(
+                        tilesetJson.boundingVolume,
+                        Cesium.Matrix4.IDENTITY
+                    );
+                }
+                else{
+                    that._root = that.loadM3DDataSet(tilesetResource, tilesetJson);
+                    boundingVolume = that._root.createBoundingVolume(
+                        tilesetJson.root.boundingVolume,
+                        Cesium.Matrix4.IDENTITY
+                    );
+    
+                }
                 that._fieldInfo = tilesetJson.fieldInfo;
-                // hys
                 that._name = Cesium.defined(tilesetJson.layerName) ? tilesetJson.layerName : '';
                 that._guid = Cesium.defined(tilesetJson.guid) ? tilesetJson.guid : '';
                 const gltfUpAxis = Cesium.defined(tilesetJson.gltfUpAxis)
@@ -1488,29 +1487,7 @@ export default class MapGISM3DSet {
                         credits.push(new Cesium.Credit(credit.html, credit.showOnScreen));
                     }
                 }
-
-                // Save the original, untransformed bounding volume position so we can apply
-                // the tile transform and model matrix at run time
-                const boundingVolume = that._root.createBoundingVolume(
-                    tilesetJson.boundingVolume,
-                    Cesium.Matrix4.IDENTITY
-                );
-                // const clippingPlanesOrigin = boundingVolume.boundingSphere.center;
-                // If this origin is above the surface of the earth
-                // we want to apply an ENU orientation as our best guess of orientation.
-                // Otherwise, we assume it gets its position/orientation completely from the
-                // root tile transform and the tileset's model matrix
-                // const originCartographic = that._ellipsoid.cartesianToCartographic(clippingPlanesOrigin);
-                // if (
-                //     Cesium.defined(originCartographic) &&
-                //     originCartographic.height > Cesium.ApproximateTerrainHeights._defaultMinTerrainHeight
-                // ) {
-                //     that._initialClippingPlanesOriginMatrix = Cesium.Transforms.eastNorthUpToFixedFrame(
-                //         clippingPlanesOrigin
-                //     );
-                // }
-                // that._clippingPlanesOriginMatrix = Cesium.Matrix4.clone(that._initialClippingPlanesOriginMatrix);
-                that._readyPromise.resolve(this);
+                that._readyPromise.resolve(that);
             })
         .otherwise((error) => {
             that._readyPromise.reject(error);
@@ -2165,8 +2142,62 @@ export default class MapGISM3DSet {
         this._styleEngine.makeDirty();
     }
 
+    /**
+     * Loads the main tileset.json or a tileset.json referenced from a tile.
+     *
+     * @private
+     */
+    loadM3DTileSet(dataSetResource, dataSetJson, parentTile){
+        const { asset } = dataSetJson;
+        const statistics = this._statistics;
+        if (!Cesium.defined(dataSetResource.queryParameters.v)) {
+            const versionQuery = {
+                v: Cesium.defaultValue(asset.tilesetVersion, '0.0')
+            };
+            this._basePath += `?v=${versionQuery.v}`;
+            dataSetResource.setQueryParameters(versionQuery);
+        }
+        const rootNode = new MapGISM3D(this, dataSetResource, dataSetJson, parentTile);
+
+        if (Cesium.defined(parentTile)) {
+            parentTile.children.push(rootNode);
+            rootNode._depth = parentTile._depth + 1;
+        }
+        const stack = [];
+        stack.push(rootNode);
+
+        while (stack.length > 0) {
+            const tile = stack.pop();
+            statistics.numberOfTilesTotal += 1;
+            this._allTilesAdditive = this._allTilesAdditive && tile.refine === Cesium.Cesium3DTileRefine.ADD;
+            const { children } = tile._header;
+            if (Cesium.defined(children)) {
+                const { length } = children;
+                for (let i = 0; i < length; i += 1) {
+                    const childHeader = children[i];
+                    const childTile = new MapGISM3D(this, dataSetResource, childHeader, tile);
+                    tile.children.push(childTile);
+                    childTile._depth = tile._depth + 1;
+                    stack.push(childTile);
+                }
+            }
+
+            if (this._cullWithChildrenBounds) {
+                Cesium.Cesium3DTileOptimizations.checkChildrenWithinParent(tile);
+            }
+        }
+
+        return rootNode;
+    }
+
+    /**
+     * Loads the main tileset.json or a tileset.json referenced from a tile.
+     *
+     * @private
+     */
+
     loadChildTileSet(m3dSetResource, indexJson, parentNode) {
-        // 添加版本号参数
+          // 添加版本号参数
         const { asset } = indexJson;
         if (!Cesium.defined(m3dSetResource.queryParameters.v)) {
             const versionQuery = {
@@ -2177,58 +2208,39 @@ export default class MapGISM3DSet {
         }
 
         const statistics = this._statistics;
-        // Object.extend(indexJson, {
-        //     boundingVolume: parentNode._header.boundingVolume
-        // });
-        var rootTile = new MapGISM3D(this, m3dSetResource, indexJson, parentNode);
-
-        if (Cesium.defined(parentNode)) {
-            parentNode.children.push(rootTile);
-            rootTile._depth = parentNode._depth + 1;
-        }
         const stack = [];
-        stack.push(rootTile);
-        // stack.push({
-        //     header: indexJson.children, // 这里后面直接就是children
-        //     tile3D: parentNode
-        // });
+        stack.push({
+            header: indexJson.children, 
+            tile3D: parentNode
+        });
 
         while (stack.length > 0) {
             const tile = stack.pop();
-            // let tile3D = tile.tile3D;
-            // var children = tile.header;
-            const { children } = tile._header;
-            statistics.numberOfTilesTotal += 1;
-            this._allTilesAdditive = this._allTilesAdditive && tile.refine === Cesium.Cesium3DTileRefine.ADD;
+            const children = tile.header;
             if (Cesium.defined(children)) {
                 const { length } = children;
                 for (let i = 0; i < length; i += 1) {
                     const childHeader = children[i];
-                    if (childHeader.lodError < this._baseMinError) {
-                        childHeader.lodError = 0;
+                    if (parentNode.childrenNameList.indexOf(childHeader.content.uri) <= -1) {
+                        if (childHeader.geometricError < this._baseMinError) {
+                            childHeader.geometricError = 0;
+                        }
+                        const childTile = new _MapGISM3D__WEBPACK_IMPORTED_MODULE_1__["default"](this, m3dSetResource, childHeader, parentNode);
+                        parentNode.children.push(childTile);
+                        parentNode.childrenNameList.push(childHeader.content.uri);
+                        childTile._depth = parentNode._depth + 1;
+                        statistics.numberOfTilesTotal += 1;
+                        stack.push({
+                            header: childHeader,
+                            tile3D: childTile
+                        });
                     }
-                    // Object.extend(childHeader, {
-                    //     refine: 'REPLACE'
-                    // });
-
-                    const childTile = new MapGISM3D(this, m3dSetResource, childHeader, tile);
-                    rootTile.children.push(childTile);
-                    rootTile.childrenNameList.push(childHeader.uri);
-                    childTile._depth = parentNode._depth + 1;
-                    // statistics.numberOfTilesTotal += 1;
-                    stack.push(childTile);
-                    // stack.push({
-                    //     header: childHeader,
-                    //     tile3D: childTile
-                    // });
                 }
             }
-
             if (this._cullWithChildrenBounds) {
                 Cesium.Cesium3DTileOptimizations.checkChildrenWithinParent(parentNode);
             }
         }
-
         return parentNode;
     }
 
@@ -2239,12 +2251,12 @@ export default class MapGISM3DSet {
      */
     loadM3DDataSet(dataSetResource, dataSetJson, parentTile) {
         const { asset } = dataSetJson;
-        // if (!Cesium.defined(asset)) {
-        //     throw new Cesium.RuntimeError('Tileset must have an asset property.');
-        // }
-        // if (dataSetJson.version !== '0.0' && dataSetJson.version !== '1.0') {
-        //     throw new Cesium.RuntimeError('版本信息不匹配');
-        // }
+        if (!Cesium.defined(asset)) {
+            throw new Cesium.RuntimeError('Tileset must have an asset property.');
+        }
+        if (asset.version !== '0.0' && asset.version !== '1.0') {
+            throw new Cesium.RuntimeError('版本信息不匹配');
+        }
 
         const statistics = this._statistics;
 
@@ -2256,122 +2268,11 @@ export default class MapGISM3DSet {
             this._basePath += `?v=${versionQuery.v}`;
             dataSetResource.setQueryParameters(versionQuery);
         }
-        //fgy新版数据请求rootNode========================
-        // var url = dataSetResource.url;
-        // url = url.substring(0,url.lastIndexOf('/')+1);
-        // url += dataSetJson.uri;
-        //  const resource = Cesium.Resource.createIfNeeded(url);
-        //  var promise = MapGISM3DSet.loadJson(resource);
-        //  promise.then((rootNodeJson)=>{
-        //      var root = rootNodeJson;
-        //     // 创建根节点
-        //     Object.extend(root,{
-        //         boundingVolume:{
-        //             geoBox:this._geoBox
-        //         },
-        //         // boundingVolume: {
-        //             // region: [
-        //             //     1.9954349994659424,
-        //             //     0.5323253273963928,
-        //             //     1.9954394102096558,
-        //             //     0.532336413860321,
-        //             //     0.0,
-        //             //     15.327899932861329
-        //             // ]
-        //             // regionBox: [
-        //             //     -3.552713678800501e-14,
-        //             //     -0.00000286102294921875,
-        //             //     0.0,
-        //             //     23.904619216918947,
-        //             //     69.44810485839844,
-        //             //     15.327899932861329
-        //             // ]
-        //         // },
-        //         refine:'REPLACE'});
-
-        // rootNodeJson.transform = this._transform;
-        // const rootNodes = new MapGISM3D(this, dataSetResource, rootNodeJson, parentTile);
-
-        // if (Cesium.defined(parentTile)) {
-        //     parentTile.children.push(rootNodes);
-        //     rootNodes._depth = parentTile._depth + 1;
-        // }
-        // const stack = [];
-        // stack.push(rootNodes);
-
-        // while (stack.length > 0) {
-        //     const tile = stack.pop();
-        //     statistics.numberOfTilesTotal += 1;
-        //     this._allTilesAdditive = this._allTilesAdditive && tile.refine === Cesium.Cesium3DTileRefine.ADD;
-        //     const { childrenNode } = tile._header;
-        //     if (Cesium.defined(childrenNode)) {
-        //         const { length } = childrenNode;
-        //         for (let i = 0; i < length; i += 1) {
-        //             const childHeader = childrenNode[i];
-        //             // Object.extend(childHeader,{
-        //             //     boundingVolume: {
-        //             //         region: [
-        //             //                 1.9954349994659424,
-        //             //                 0.5323253273963928,
-        //             //                 1.995436429977417,
-        //             //                 0.532336413860321,
-        //             //                 0.0,
-        //             //                 15.327899932861329
-        //             //             ]
-        //             //         // regionBox: [
-        //             //         //     -3.552713678800501e-14,
-        //             //         //     -0.00000286102294921875,
-        //             //         //     0.0,
-        //             //         //     7.298200607299805,
-        //             //         //     69.44810485839844, 
-        //             //         //     15.327899932861329]
-        //             //     }
-        //             // });
-        //             Object.extend(childHeader,{boundingVolume: {geoBox:childHeader.geoBox}});
-        //             const childTile = new MapGISM3D(this, dataSetResource, childHeader, tile);
-        //             tile.children.push(childTile);
-        //             childTile._depth = tile._depth + 1;
-        //             stack.push(childTile);
-        //         }
-        //     }
-
-        //     if (this._cullWithChildrenBounds) {
-        //         Cesium.Cesium3DTileOptimizations.checkChildrenWithinParent(tile);
-        //     }
-        // }
-
-        //  this._root = rootNodes;
-        //  var boundingVolume = this._root.createBoundingVolume(rootNodeJson.boundingVolume, Cesium.Matrix4.IDENTITY);
-        //  var clippingPlanesOrigin = boundingVolume.boundingSphere.center;
-        //  const originCartographic = this._ellipsoid.cartesianToCartographic(clippingPlanesOrigin);
-        //         if (
-        //             Cesium.defined(originCartographic) &&
-        //             originCartographic.height > Cesium.ApproximateTerrainHeights._defaultMinTerrainHeight
-        //         ) {
-        //             this._initialClippingPlanesOriginMatrix = Cesium.Transforms.eastNorthUpToFixedFrame(
-        //                 clippingPlanesOrigin
-        //             );
-        //         }
-        //  this._clippingPlanesOriginMatrix = Cesium.Matrix4.clone(this._initialClippingPlanesOriginMatrix);
-        //  this._readyPromise.resolve(this);
-        // });
-        //==============================================
 
         // A tileset JSON file referenced from a tile may exist in a different directory than the root tileset.
         // Get the basePath relative to the external tileset.
         // 创建根节点
-        // const rootNode = new MapGISM3D(this, dataSetResource, dataSetJson.root, parentTile);
-
-
-        // 创建根节点
-        // Object.extend(dataSetJson, {
-        //     boundingVolume: {
-        //         geoBox: this._geoBox
-        //     },
-        //     refine: 'REPLACE'
-        // });
-        // dataSetJson.transform = this._transform;
-        const rootNode = new MapGISM3D(this, dataSetResource, dataSetJson, parentTile);
+        const rootNode = new MapGISM3D(this, dataSetResource, dataSetJson.root, parentTile);
 
         // If there is a parentTile, add the root of the currently loading tileset
         // to parentTile's children, and update its _depth.
@@ -2396,7 +2297,6 @@ export default class MapGISM3DSet {
                     const childHeader = children[i];
                     const childTile = new MapGISM3D(this, dataSetResource, childHeader, tile);
                     tile.children.push(childTile);
-                    tile.childrenNameList.push(childHeader.uri);
                     childTile._depth = tile._depth + 1;
                     stack.push(childTile);
                 }

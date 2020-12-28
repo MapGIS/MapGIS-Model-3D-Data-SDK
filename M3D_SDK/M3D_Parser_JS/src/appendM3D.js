@@ -78,12 +78,12 @@ function loadM3DByFile(viewer, options) {
                 new Cesium.HeadingPitchRange(0.0, -0.5, boundingSphere.radius)
             );
             viewer.camera.lookAtTransform(Cesium.Matrix4.IDENTITY);
-            const cartographic = Cesium.Cartographic.fromCartesian(layer.boundingSphere.center);
-            const surface = Cesium.Cartesian3.fromRadians(cartographic.longitude, cartographic.latitude, 0.0);
-            const offset = Cesium.Cartesian3.fromRadians(cartographic.longitude, cartographic.latitude, 0.0);
-            const translation = Cesium.Cartesian3.subtract(offset, surface, new Cesium.Cartesian3());
-            const tmpLayer = layer;
-            tmpLayer.modelMatrix = Cesium.Matrix4.fromTranslation(translation);
+            // const cartographic = Cesium.Cartographic.fromCartesian(layer.boundingSphere.center);
+            // const surface = Cesium.Cartesian3.fromRadians(cartographic.longitude, cartographic.latitude, 0.0);
+            // const offset = Cesium.Cartesian3.fromRadians(cartographic.longitude, cartographic.latitude, 0.0);
+            // const translation = Cesium.Cartesian3.subtract(offset, surface, new Cesium.Cartesian3());
+            // const tmpLayer = layer;
+            // tmpLayer.modelMatrix = Cesium.Matrix4.fromTranslation(translation);
         })
         .otherwise((error) => {
             throw error;

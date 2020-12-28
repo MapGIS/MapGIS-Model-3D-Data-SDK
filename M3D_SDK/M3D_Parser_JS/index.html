@@ -35,6 +35,41 @@
             function startup(Cesium) {
                 'use strict';
 
+function appendModel(id, url, lon, lat, height, scale, options) {
+        var position = Cartesian3.fromDegrees(lon, lat, height);
+        //var heading = CesiumMath.toRadians(-90);
+        //var pitch = 0;
+        //var roll = 0;
+        //var hpr = new HeadingPitchRoll(heading, pitch, roll);
+        //var orientation = Transforms.headingPitchRollQuaternion(position, hpr);
+        //var modelObj = {
+        //    uri: url,
+        //    minimumPixelSize: 128,
+        //    maximumScale: scale
+        //};
+        //var height = 250000.0;
+        var modelMatrix = Transforms.headingPitchRollToFixedFrame(position, new HeadingPitchRoll());
+        var modelObj = {
+            id: id,
+            url: url,
+            modelMatrix: modelMatrix,
+
+            scale: scale
+        };
+        if (defined(options)) {
+            Object.extend(modelObj, options);
+        }
+
+        var modelSingle = this.scene.primitives.add(Model.fromGltf(modelObj));
+        modelSingle.readyPromise.then(function() {
+            modelSingle.activeAnimations.addAll({
+                speedup: 0.5,
+                loop: ModelAnimationLoop.REPEAT
+            });
+        });
+
+        return modelSingle;
+    }
                 // const viewer = new Cesium.Viewer('cesiumContainer', {
                 //     terrainExaggeration: 1,
                 //     requestRenderMode: true,
@@ -49,7 +84,7 @@
                 webGlobe.showPosition();
                 viewer.clock.shouldAnimate = true;
 
-                viewer.scene.globe.show = true;
+                viewer.scene.globe.show = false;
 
                 // 设置太阳时间
                 // const utc = Cesium.JulianDate.fromDate(new Date("2019/10/04 16:00:00"));//UTC
@@ -75,14 +110,29 @@
 
                 // 加载文件服务数据
                 let url = './data/景观_建筑模型/景观_建筑模型.mcj';
-                 url = './data/m3d-sample/m3d-sample.mcj';
+                //  url = './data/m3d-sample/m3d-sample.mcj';
+                // CesiumZondy.M3D.appendM3D(viewer, url, 'file', {
+                //     maximumScreenSpaceError: 16
+                // });
+                url = './data/m3d-sample-OID2/m3d-sample-OID.mcj';
+                //  url = './data/m3d-sample - 副本/m3d-                   sample.mcj';
                 CesiumZondy.M3D.appendM3D(viewer, url, 'file', {
                     maximumScreenSpaceError: 16
                 });
+
+            //    var modelUrl = '../data/test.glb';
+            //    var model = webGlobe.appendModel('1', modelUrl, 114.33, 30.5, 20.0, 1, {
+            //         color: Cesium.Color.RED,
+            //         colorBlendMode: Cesium.ColorBlendMode.MIX,//  MIX是混合 Cesium.ColorBlendMode.HIGHLIGHT, HIGHLIGHT是高亮
+            //         colorBlendAmount: 0.4 //这个是程度
+            //     });
+            //     model.debugShowBoundingVolume = true;
+
                 //拾取gltf 
                 var pick = new Cesium.ScreenSpaceEventHandler(viewer.canvas);
                 
                 pick.setInputAction(function leftClick(click){
+                    debugger;
                     var pickedFeature = viewer.scene.pick(click.position);
                 }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
 
