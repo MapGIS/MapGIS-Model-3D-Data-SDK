@@ -6,3 +6,5 @@ libs/Cesium*
 package-lock.json
 
 .DS_Store
+
+data

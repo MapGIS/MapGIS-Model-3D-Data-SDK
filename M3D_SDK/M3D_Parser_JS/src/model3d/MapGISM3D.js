@@ -206,8 +206,10 @@ function createBoundingBox(box, transform, result) {
     let scale = Cesium.Matrix4.getScale(transform,scratchScale);
     let maxScale = Cesium.Cartesian3.maximumComponent(scale);
     radius *= maxScale;
+    var rotation = new Cesium.Matrix3();
+    rotation = Matrix4.getRotation(transform,rotation);
     if (Cesium.defined(result) && result instanceof Cesium.TileBoundingSphere) {
-        result.update(center, halfAxes);
+        result.update(center, radius);
         return result;
     }
     return new Cesium.TileBoundingSphere(center,radius);

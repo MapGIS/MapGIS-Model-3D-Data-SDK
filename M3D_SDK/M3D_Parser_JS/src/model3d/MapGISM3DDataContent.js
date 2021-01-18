@@ -380,7 +380,7 @@ export default class MapGISM3DDataContent {
         this.featurePropertiesDirty = false;
 
         // qwk 实例化数据专用
-        this._modelInstanceCollection = undefined;
+        // this._modelInstanceCollection = undefined;
         // qwk 用于判断数据类型
         this._dataType = 0;
 
