@@ -1,4 +1,3 @@
-import { readSync } from 'fs';
 import { CesiumZondy } from '../core/Base';
 // import { Zlib } from '../thirdParty/inflate.min';
 import { Zlib } from '../thirdParty/unzip.min';
@@ -195,27 +194,6 @@ const scratchRectangle = new Cesium.Rectangle();
 const scratchOrientedBoundingBox = new Cesium.OrientedBoundingBox();
 const scratchTransform = new Cesium.Matrix4();
 
-function createBoundingBox(box, transform, result) {
-    let min = new Cesium.Cartesian3(box.min.x, box.min.y, box.min.z);
-    Cesium.Matrix4.multiplyByPoint(transform, min, min);
-    let max = new Cesium.Cartesian3(box.max.x, box.max.y, box.max.z);
-    Cesium.Matrix4.multiplyByPoint(transform, max, max);
-    let sphere = Cesium.BoundingSphere.fromCornerPoints(min,max,new Cesium.BoundingSphere());
-    let center = sphere.center;
-    let radius = sphere.radius;
-    let scale = Cesium.Matrix4.getScale(transform,scratchScale);
-    let maxScale = Cesium.Cartesian3.maximumComponent(scale);
-    radius *= maxScale;
-    var rotation = new Cesium.Matrix3();
-    rotation = Matrix4.getRotation(transform,rotation);
-    if (Cesium.defined(result) && result instanceof Cesium.TileBoundingSphere) {
-        result.update(center, radius);
-        return result;
-    }
-    return new Cesium.TileBoundingSphere(center,radius);
-
-}
-
 function createBox(box, transform, result) {
     let center = Cesium.Cartesian3.fromElements(box[0], box[1], box[2], scratchCenter);
     let halfAxes = Cesium.Matrix3.fromArray(box, 3, scratchHalfAxes);
@@ -225,7 +203,8 @@ function createBox(box, transform, result) {
     // let rotationScale = Cesium.Matrix4.getRotation(transform, scratchMatrix);
 
     let rotationScale;
-    // qwk 此处新版本的接口发生了变动
+
+    // qwk 此处新版本的接口发生了变动;
     if (Cesium.defined(Cesium.Matrix4.getRotation)) {
         rotationScale = Cesium.Matrix4.getRotation(transform, scratchMatrix);
     } else {
@@ -269,7 +248,8 @@ function createBoxFromTransformedRegion(region, transformParam, initialTransform
 
     // let rotationScale = Cesium.Matrix4.getRotation(transform, scratchMatrix);
     let rotationScale;
-    // qwk 此处新版本的接口发生了变动
+
+    // qwk 此处新版本的接口发生了变动;
     if (Cesium.defined(Cesium.Matrix4.getRotation)) {
         rotationScale = Cesium.Matrix4.getRotation(transform, scratchMatrix);
     } else {
@@ -320,6 +300,30 @@ function createSphere(sphere, transform, result) {
         return result;
     }
     return new Cesium.TileBoundingSphere(center, radius);
+}
+
+function createBoundingBox(box, transform, initialTransform, result) {
+    const region = [box.left, box.bottom, box.right, box.top, box.minHeight, box.maxHeight];
+
+    return createRegion(region, transform, initialTransform, result);
+
+    // const min = new Cesium.Cartesian3(box.min.x, box.min.y, box.min.z);
+    // Cesium.Matrix4.multiplyByPoint(transform, min, min);
+    // const max = new Cesium.Cartesian3(box.max.x, box.max.y, box.max.z);
+    // Cesium.Matrix4.multiplyByPoint(transform, max, max);
+    // const sphere = Cesium.BoundingSphere.fromCornerPoints(min, max, new Cesium.BoundingSphere());
+    // const { center } = sphere;
+    // let { radius } = sphere;
+    // const scale = Cesium.Matrix4.getScale(transform, scratchScale);
+    // const maxScale = Cesium.Cartesian3.maximumComponent(scale);
+    // radius *= maxScale;
+    // let rotation = new Cesium.Matrix3();
+    // rotation = Cesium.Matrix4.getRotation(transform, rotation);
+    // if (Cesium.defined(result) && result instanceof Cesium.TileBoundingSphere) {
+    //     result.update(center, radius);
+    //     return result;
+    // }
+    // return new Cesium.TileBoundingSphere(center, radius);
 }
 
 function applyDebugSettings(tileParam, tileset, frameState) {
@@ -509,9 +513,18 @@ export default class MapGISM3D {
          */
         this.geometricError = header.geometricError;
 
-         if(tileset._version === '1.0'){
-            contentHeader = header.uri;
-            this.geometricError = header.lodError;
+        if (tileset._version === '2.0') {
+            contentHeader = Cesium.defined(header.rootNode) ? header.rootNode.uri : header.uri;
+            if (!Cesium.defined(contentHeader)) {
+                const { tileDataInfoIndex } = header;
+                if (Cesium.defined(tileDataInfoIndex)) {
+                    const tileDataInfo = header.tileDataInfoList[tileDataInfoIndex];
+
+                    // 暂时这么处理
+                    contentHeader = tileDataInfo.tileData.uri;
+                }
+            }
+            this.geometricError = Cesium.defaultValue(header.lodError, 10000000);
         }
 
         if (!Cesium.defined(this.geometricError)) {
@@ -527,7 +540,8 @@ export default class MapGISM3D {
             if (header.refine === 'replace' || header.refine === 'add') {
                 MapGISM3D._deprecationWarning(
                     'lowercase-refine',
-                    `This tile uses a lowercase refine "${header.refine
+                    `This tile uses a lowercase refine "${
+                        header.refine
                     }". Instead use "${header.refine.toUpperCase()}".`
                 );
             }
@@ -585,16 +599,16 @@ export default class MapGISM3D {
 
         if (Cesium.defined(contentHeader)) {
             let contentHeaderUri = contentHeader;
-            if(Cesium.defined(contentHeaderUri.uri)){
+            if (Cesium.defined(contentHeaderUri.uri)) {
                 contentHeaderUri = contentHeader.uri;
             }
 
             hasEmptyContent = false;
             contentState = Cesium.Cesium3DTileContentState.UNLOADED;
             if (!this._tileset._isIGServer) {
-                if (this._tileset._version === '1.0' && contentHeaderUri.indexOf('../') === 0 ) {
+                if (this._tileset._version === '2.0' && contentHeaderUri.indexOf('../') === 0) {
                     // 新数据路径
-                    var tempUri = baseResource._url;
+                    let tempUri = baseResource._url;
                     tempUri = tempUri.substring(0, tempUri.indexOf('node') + 5) + contentHeaderUri.substring(3);
                     baseResource._url = tempUri;
                     contentHeaderUri = contentHeaderUri.substring(5);
@@ -623,10 +637,11 @@ export default class MapGISM3D {
 
                 contentResource.url = contentResource.url.replace('datatype=10', 'datatype=11');
                 if (this._tileset._isM3dDataServer > -1) {
-                    contentResource.url.replace('{dataName}',encodeURIComponent(dataName +contentHeaderUri)) ;///+ '&compress=false';
-                    contentResource.url = `${contentResource.url.substring(0, contentResource.url.lastIndexOf('&dataName=') + 10) +
+                    contentResource.url.replace('{dataName}', encodeURIComponent(dataName + contentHeaderUri)); /// + '&compress=false';
+                    contentResource.url = `${
+                        contentResource.url.substring(0, contentResource.url.lastIndexOf('&dataName=') + 10) +
                         encodeURIComponent(dataName + contentHeaderUri)
-                        }&webGL=true`; 
+                    }&webGL=true`;
                 } else {
                     contentResource.url = `${contentResource.url.substring(
                         0,
@@ -1185,15 +1200,15 @@ export default class MapGISM3D {
                 let magic = Cesium.getMagic(uint8Array);
 
                 if (magic === 'PK') {
-                   
-                    var unzip = new Zlib.Unzip(uint8Array, {});
-                    var files = {};
-                    var filenames = unzip.getFilenames();
-                    var i, il;
+                    const unzip = new Zlib.Unzip(uint8Array, {});
+                    const files = {};
+                    const filenames = unzip.getFilenames();
+                    let i;
+                    let il;
 
                     for (i = 0, il = filenames.length; i < il; ++i) {
                         files[filenames[i]] = unzip.decompress(filenames[i]);
-                        if ( files[filenames[i]].length > 0) {
+                        if (files[filenames[i]].length > 0) {
                             arrayBuffer = files[filenames[i]].buffer;
                         }
                     }
@@ -1201,7 +1216,7 @@ export default class MapGISM3D {
                 }
                 if (magic === 'zipx') {
                     uint8Array = uint8Array.slice(3);
-                    var inflator = inflate(uint8Array);
+                    const inflator = inflate(uint8Array);
                     arrayBuffer = inflator.buffer;
                     magic = 'm3d';
                 }
@@ -1233,9 +1248,9 @@ export default class MapGISM3D {
                 if (Cesium.defined(contentFactory)) {
                     content = contentFactory(tileset, that, that._contentResource, arrayBuffer, 0);
                 } else {
-                    var indexJson = Cesium.getStringFromTypedArray(uint8Array);
-                    content = new MapGISM3DTileContent(tileset,that,that._contentResource,arrayBuffer,0);
-                    
+                    const indexJson = Cesium.getStringFromTypedArray(uint8Array);
+                    content = new MapGISM3DTileContent(tileset, that, that._contentResource, arrayBuffer, 0);
+
                     that.hasTilesetContent = true;
                 }
                 that._content = content;
@@ -1276,7 +1291,6 @@ export default class MapGISM3D {
             });
 
         return true;
-
     }
 
     unloadContent() {
@@ -1442,8 +1456,8 @@ export default class MapGISM3D {
         if (Cesium.defined(boundingVolumeHeader.sphere)) {
             return createSphere(boundingVolumeHeader.sphere, transform, result);
         }
-        if(Cesium.defined(boundingVolumeHeader.geoBox)){
-            return createBoundingBox(boundingVolumeHeader.geoBox,transform,result);
+        if (Cesium.defined(boundingVolumeHeader.boundingBox)) {
+            return createBoundingBox(boundingVolumeHeader.boundingBox, transform, this._initialTransform, result);
         }
         throw new Cesium.RuntimeError('boundingVolume must contain a sphere, region, or box');
     }
@@ -1579,15 +1593,15 @@ export default class MapGISM3D {
         const useDistance = !tileset._skipLevelOfDetail && this.refine === Cesium.Cesium3DTileRefine.REPLACE;
         const normalizedPreferredSorting = useDistance
             ? priorityNormalizeAndClamp(
-                this._priorityHolder._distanceToCamera,
-                minimumPriority.distance,
-                maximumPriority.distance
-            )
+                  this._priorityHolder._distanceToCamera,
+                  minimumPriority.distance,
+                  maximumPriority.distance
+              )
             : priorityNormalizeAndClamp(
-                this._priorityReverseScreenSpaceError,
-                minimumPriority.reverseScreenSpaceError,
-                maximumPriority.reverseScreenSpaceError
-            );
+                  this._priorityReverseScreenSpaceError,
+                  minimumPriority.reverseScreenSpaceError,
+                  maximumPriority.reverseScreenSpaceError
+              );
         const preferredSortingDigits = isolateDigits(
             normalizedPreferredSorting,
             preferredSortingDigitsCount,

@@ -169,7 +169,7 @@ function updateModel(ownerParam, tileset, frameState) {
     const owner = ownerParam;
     const commandStart = frameState.commandList.length;
 
-    // 韩彦生
+    // 韩彦生.
     if (owner._model === undefined) {
         return;
     }
@@ -408,23 +408,23 @@ export default class MapGISM3DDataContent {
         const { content } = param;
         const { byteStart } = param;
         const { allLength } = param;
-        
-        let featureTableJsonByteLength = 0;//view.getUint32(byteOffset, true);
 
-        let featureTableBinaryByteLength =0; //view.getUint32(byteOffset, true);
+        let featureTableJsonByteLength = 0; // view.getUint32(byteOffset, true);
 
-        let batchTableJsonByteLength = 0; //view.getUint32(byteOffset, true);
+        let featureTableBinaryByteLength = 0; // view.getUint32(byteOffset, true);
 
-        let batchTableBinaryByteLength = 0;//view.getUint32(byteOffset, true);
-        if(param.tileset._version === '0.0'){
-            let jsonIndexLength = view.getUint32(byteOffset, true);
+        let batchTableJsonByteLength = 0; // view.getUint32(byteOffset, true);
+
+        let batchTableBinaryByteLength = 0; // view.getUint32(byteOffset, true);
+        if (param.tileset._version === '0.0') {
+            const jsonIndexLength = view.getUint32(byteOffset, true);
             byteOffset += sizeOfUint32;
             let indexJson;
             if (jsonIndexLength > 0) {
-                let jsonIndexString = Cesium.getStringFromTypedArray(uint8Array, byteOffset, jsonIndexLength);
+                const jsonIndexString = Cesium.getStringFromTypedArray(uint8Array, byteOffset, jsonIndexLength);
                 byteOffset += jsonIndexLength;
                 indexJson = JSON.parse(jsonIndexString);
-                //加载子节点
+                // 加载子节点
                 tileset.loadChildTileSet(resource, indexJson, parentNode);
             }
             byteOffset += sizeOfUint32;
@@ -440,10 +440,10 @@ export default class MapGISM3DDataContent {
 
             batchTableBinaryByteLength = view.getUint32(byteOffset, true);
             byteOffset += sizeOfUint32;
-        } 
-        
+        }
+
         let batchLength;
-       
+
         if (batchTableJsonByteLength >= 570425344) {
             // First legacy check
             byteOffset -= sizeOfUint32 * 2;
@@ -518,7 +518,6 @@ export default class MapGISM3DDataContent {
         if (Cesium.defined(tileset.classificationType)) {
             colorChangedCallback = createColorChangedCallback(content);
         }
-    
 
         const batchTable = new Cesium.Cesium3DTileBatchTable(
             content,
@@ -538,9 +537,9 @@ export default class MapGISM3DDataContent {
 
         let gltfView;
         if (byteOffset % 4 === 0) {
-            if(param.tileset._version === '0.0'){
+            if (param.tileset._version === '0.0') {
                 gltfView = new Uint8Array(arrayBuffer, byteOffset, gltfByteLength);
-            }else{
+            } else {
                 gltfView = new Uint8Array(arrayBuffer, byteOffset, arrayBuffer.byteLength);
             }
         } else {
@@ -548,8 +547,8 @@ export default class MapGISM3DDataContent {
             gltfView = new Uint8Array(uint8Array.subarray(byteOffset, byteOffset + gltfByteLength));
         }
 
-        var pickObject = {
-            content: content,
+        const pickObject = {
+            content,
             primitive: tileset
         };
 
@@ -568,8 +567,8 @@ export default class MapGISM3DDataContent {
             new Cesium.Matrix4()
         );
 
-            // PERFORMANCE_IDEA: patch the shader on demand, e.g., the first time show/color changes.
-            // The pick shader still needs to be patched.
+        // PERFORMANCE_IDEA: patch the shader on demand, e.g., the first time show/color changes.
+        // The pick shader still needs to be patched.
         // content._model = new Cesium.Model({
         //     gltf: gltfView,
         //     cull: false, // The model is already culled by 3D Tiles
@@ -609,13 +608,12 @@ export default class MapGISM3DDataContent {
             fragmentShaderLoaded: getFragmentShaderCallback(content),
             uniformMapLoaded: batchTable.getUniformMapCallback(),
             pickIdLoaded: getPickIdCallback(content),
-            addBatchIdToGeneratedShaders: batchLength > 0,// If the batch table has values in it, generated shaders will need a batchId attribute
-            pickObject:pickObject,
-            m3dVersion:param.tileset._version 
+            addBatchIdToGeneratedShaders: batchLength > 0, // If the batch table has values in it, generated shaders will need a batchId attribute
+            pickObject,
+            m3dVersion: param.tileset._version
             // imageBasedLightingFactor: tileset.imageBasedLightingFactor,
             // lightColor: tileset.lightColor
         });
-
     }
 
     /**
@@ -911,8 +909,8 @@ export default class MapGISM3DDataContent {
         // const dataType = view.getUint32(byteOffset, true);
         // // byteOffset += sizeOfUint32;
         // // const dataType =  ;
-        let dataType = undefined;
-        if(contentParam._tileset._version === '0.0'){
+        let dataType;
+        if (contentParam._tileset._version === '0.0') {
             byteOffset += sizeOfUint32; // Skip magic
             // 韩彦生  这里需要在m3d后面添加一个版本号 也便于缓存文件是否清理的标识  这里读到的第一个长度为整个文件的长度
             const version = view.getUint32(byteOffset, true);
@@ -925,7 +923,7 @@ export default class MapGISM3DDataContent {
             dataType = view.getUint32(byteOffset, true);
             byteOffset += sizeOfUint32;
         }
-        if(contentParam._tileset._version === '1.0'){
+        if (contentParam._tileset._version === '2.0') {
             dataType = view.getUint32(byteOffset, true);
         }
 
@@ -941,7 +939,7 @@ export default class MapGISM3DDataContent {
         param.byteStart = byteStart;
 
         // 文件总长度
-        let allLength = 0;
+        const allLength = 0;
         switch (dataType) {
             // case 0:
             //     content._dataType = 0;
@@ -1082,10 +1080,10 @@ export default class MapGISM3DDataContent {
         } else if (this._dataType === 1) {
             return this._modelInstanceCollection.readyPromise;
         } else if (this._dataType === 2) {
-            // 点云
+            // 点云.
             return this._pointCloud.readyPromise;
         } else {
-            // 默认为模型
+            // 默认为模型.
             if (this._model) {
                 return this._model.readyPromise;
             }
@@ -1164,7 +1162,7 @@ export default class MapGISM3DDataContent {
         // debugger;
         if (this._dataType === 0) {
             updateModel(this, tileset, frameState);
-        } 
+        }
         // else if (this._dataType === 1) {
         //     updateInstance(this, tileset, frameState);
         // } else if (this._dataType === 2) {

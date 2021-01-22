@@ -10,7 +10,7 @@ function zoomToM3dLayer(viewer, layer) {
 
 function appendM3DLayer(viewer, baseUrl, renderIndex, layerIndex, gdbpUrl, visible, igserver, options) {
     const dataUrl = `${baseUrl}/GetDataStreams?sceneIndex=0&layerIndex=${renderIndex}&Level=0&Row=0&Col=0`;
-    const showBoundingVolume = Cesium.defaultValue(options.debugShowBoundingVolume, true);
+    const showBoundingVolume = Cesium.defaultValue(options.debugShowBoundingVolume, false);
     const maxScreenError = Cesium.defaultValue(options.maximumScreenSpaceError, 16);
     const debugShowMemoryUsage = Cesium.defaultValue(options.debugShowMemoryUsage, false);
     const debugShowUrl = Cesium.defaultValue(options.debugShowUrl, false);
