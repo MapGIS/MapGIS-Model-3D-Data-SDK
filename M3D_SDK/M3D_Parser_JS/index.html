@@ -68,18 +68,18 @@
 
                     return modelSingle;
                 }
-                // const viewer = new Cesium.Viewer('cesiumContainer', {
-                //     terrainExaggeration: 1,
-                //     requestRenderMode: true,
-                //     animation: false,
-                //     timeline: false
-                // });
-                var webGlobe = new Cesium.WebSceneControl('cesiumContainer', {
+                const viewer = new Cesium.Viewer('cesiumContainer', {
                     terrainExaggeration: 1,
-                    requestRenderMode: true
+                    requestRenderMode: true,
+                    animation: false,
+                    timeline: false
                 });
-                const viewer = webGlobe.viewer;
-                webGlobe.showPosition();
+                // var webGlobe = new Cesium.WebSceneControl('cesiumContainer', {
+                //     terrainExaggeration: 1,
+                //     requestRenderMode: true
+                // });
+                // const viewer = webGlobe.viewer;
+                // webGlobe.showPosition();
                 viewer.clock.shouldAnimate = true;
 
                 viewer.scene.globe.show = !false;
@@ -115,8 +115,8 @@
                 url = './data/new/dayantaM3D/dayanta.mcj';
                 //  url = './data/m3d-sample - 副本/m3d-sample.mcj';
                 CesiumZondy.M3D.appendM3D(viewer, url, 'file', {
-                    maximumScreenSpaceError: 16,
-                    debugShowBoundingVolume: true
+                    maximumScreenSpaceError: 64,
+                    debugShowBoundingVolume: false
                 });
 
                 //    var modelUrl = '../data/test.glb';

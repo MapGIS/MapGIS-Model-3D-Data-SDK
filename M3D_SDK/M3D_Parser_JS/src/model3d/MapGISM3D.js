@@ -1,5 +1,4 @@
 import { CesiumZondy } from '../core/Base';
-// import { Zlib } from '../thirdParty/inflate.min';
 import { Zlib } from '../thirdParty/unzip.min';
 import { inflate } from '../thirdParty/pako_inflate';
 import MapGISM3DDataContent from './MapGISM3DDataContent';
@@ -204,7 +203,6 @@ function createBox(box, transform, result) {
 
     let rotationScale;
 
-    // qwk 此处新版本的接口发生了变动;
     if (Cesium.defined(Cesium.Matrix4.getRotation)) {
         rotationScale = Cesium.Matrix4.getRotation(transform, scratchMatrix);
     } else {
@@ -249,7 +247,6 @@ function createBoxFromTransformedRegion(region, transformParam, initialTransform
     // let rotationScale = Cesium.Matrix4.getRotation(transform, scratchMatrix);
     let rotationScale;
 
-    // qwk 此处新版本的接口发生了变动;
     if (Cesium.defined(Cesium.Matrix4.getRotation)) {
         rotationScale = Cesium.Matrix4.getRotation(transform, scratchMatrix);
     } else {
@@ -306,24 +303,6 @@ function createBoundingBox(box, transform, initialTransform, result) {
     const region = [box.left, box.bottom, box.right, box.top, box.minHeight, box.maxHeight];
 
     return createRegion(region, transform, initialTransform, result);
-
-    // const min = new Cesium.Cartesian3(box.min.x, box.min.y, box.min.z);
-    // Cesium.Matrix4.multiplyByPoint(transform, min, min);
-    // const max = new Cesium.Cartesian3(box.max.x, box.max.y, box.max.z);
-    // Cesium.Matrix4.multiplyByPoint(transform, max, max);
-    // const sphere = Cesium.BoundingSphere.fromCornerPoints(min, max, new Cesium.BoundingSphere());
-    // const { center } = sphere;
-    // let { radius } = sphere;
-    // const scale = Cesium.Matrix4.getScale(transform, scratchScale);
-    // const maxScale = Cesium.Cartesian3.maximumComponent(scale);
-    // radius *= maxScale;
-    // let rotation = new Cesium.Matrix3();
-    // rotation = Cesium.Matrix4.getRotation(transform, rotation);
-    // if (Cesium.defined(result) && result instanceof Cesium.TileBoundingSphere) {
-    //     result.update(center, radius);
-    //     return result;
-    // }
-    // return new Cesium.TileBoundingSphere(center, radius);
 }
 
 function applyDebugSettings(tileParam, tileset, frameState) {
@@ -439,7 +418,6 @@ function updateClippingPlanes(tileParam, tileset) {
 const scratchCommandList = [];
 
 function isolateDigits(normalizedValue, numberOfDigits, leftShift) {
-    // const scaled = normalizedValue * Math.pow(10, numberOfDigits);
     const scaled = normalizedValue * 10 ** numberOfDigits;
     const integer = parseInt(scaled, 10);
     return integer * 10 ** leftShift;

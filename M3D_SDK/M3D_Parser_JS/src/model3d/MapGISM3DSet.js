@@ -1190,93 +1190,6 @@ export default class MapGISM3DSet {
         Cesium.Cartesian2.clone(optionsParam.imageBasedLightingFactor, this._imageBasedLightingFactor);
 
         /**
-         * The color and intensity of the sunlight used to shade a model.
-         * <p>
-         * For example, disabling additional light sources by setting <code>model.imageBasedLightingFactor = new Cartesian2(0.0, 0.0)</code> will make the
-         * model much darker. Here, increasing the intensity of the light source will make the model brighter.
-         * </p>
-         *
-         * @type {Cartesian3}
-         * @default undefined
-         */
-        // this.lightColor = optionsParam.lightColor;
-
-        /**
-         * The sun's luminance at the zenith in kilo candela per meter squared to use for this model's procedural environment map.
-         * This is used when {@link Cesium3DTileset#specularEnvironmentMaps} and {@link Cesium3DTileset#sphericalHarmonicCoefficients} are not defined.
-         *
-         * @type Number
-         *
-         * @default 0.5
-         *
-         */
-        // this.luminanceAtZenith = Cesium.defaultValue(optionsParam.luminanceAtZenith, 0.5);
-
-        /**
-         * The third order spherical harmonic coefficients used for the diffuse color of image-based lighting. When <code>undefined</code>, a diffuse irradiance
-         * computed from the atmosphere color is used.
-         * <p>
-         * There are nine <code>Cartesian3</code> coefficients.
-         * The order of the coefficients is: L<sub>00</sub>, L<sub>1-1</sub>, L<sub>10</sub>, L<sub>11</sub>, L<sub>2-2</sub>, L<sub>2-1</sub>, L<sub>20</sub>, L<sub>21</sub>, L<sub>22</sub>
-         * </p>
-         *
-         * These values can be obtained by preprocessing the environment map using the <code>cmgen</code> tool of
-         * {@link https://github.com/google/filament/releases | Google's Filament project}. This will also generate a KTX file that can be
-         * supplied to {@link Cesium3DTileset#specularEnvironmentMaps}.
-         *
-         * @type {Cartesian3[]}
-         * @demo {@link https://cesiumjs.org/Cesium/Apps/Sandcastle/index.html?src=Image-Based Lighting.html|Sandcastle Image Based Lighting Demo}
-         * @see {@link https://graphics.stanford.edu/papers/envmap/envmap.pdf|An Efficient Representation for Irradiance Environment Maps}
-         */
-        // this.sphericalHarmonicCoefficients = optionsParam.sphericalHarmonicCoefficients;
-
-        /**
-         * A URL to a KTX file that contains a cube map of the specular lighting and the convoluted specular mipmaps.
-         *
-         * @demo {@link https://cesiumjs.org/Cesium/Apps/Sandcastle/index.html?src=Image-Based Lighting.html|Sandcastle Image Based Lighting Demo}
-         * @type {String}
-         * @see Cesium3DTileset#sphericalHarmonicCoefficients
-         */
-        // this.specularEnvironmentMaps = optionsParam.specularEnvironmentMaps;
-
-        /**
-         * This property is for debugging only; it is not optimized for production use.
-         * <p>
-         * Determines if only the tiles from last frame should be used for rendering.  This
-         * effectively "freezes" the tileset to the previous frame so it is possible to zoom
-         * out and see what was rendered.
-         * </p>
-         *
-         * @type {Boolean}
-         * @default false
-         */
-        // this.debugFreezeFrame = Cesium.defaultValue(optionsParam.debugFreezeFrame, false);
-
-        /**
-         * This property is for debugging only; it is not optimized for production use.
-         * <p>
-         * When true, assigns a random color to each tile.  This is useful for visualizing
-         * what features belong to what tiles, especially with additive refinement where features
-         * from parent tiles may be interleaved with features from child tiles.
-         * </p>
-         *
-         * @type {Boolean}
-         * @default false
-         */
-        // this.debugColorizeTiles = Cesium.defaultValue(optionsParam.debugColorizeTiles, false);
-
-        /**
-         * This property is for debugging only; it is not optimized for production use.
-         * <p>
-         * When true, renders each tile's content as a wireframe.
-         * </p>
-         *
-         * @type {Boolean}
-         * @default false
-         */
-        // this.debugWireframe = Cesium.defaultValue(optionsParam.debugWireframe, false);
-
-        /**
          * This property is for debugging only; it is not optimized for production use.
          * <p>
          * When true, renders the bounding volume for each visible tile.  The bounding volume is
@@ -1289,77 +1202,6 @@ export default class MapGISM3DSet {
          */
         this.debugShowBoundingVolume = Cesium.defaultValue(optionsParam.debugShowBoundingVolume, false);
 
-        /**
-         * This property is for debugging only; it is not optimized for production use.
-         * <p>
-         * When true, renders the bounding volume for each visible tile's content. The bounding volume is
-         * blue if the tile has a content bounding volume; otherwise it is red.
-         * </p>
-         *
-         * @type {Boolean}
-         * @default false
-         */
-        // this.debugShowContentBoundingVolume = Cesium.defaultValue(optionsParam.debugShowContentBoundingVolume, false);
-
-        /**
-         * This property is for debugging only; it is not optimized for production use.
-         * <p>
-         * When true, renders the viewer request volume for each tile.
-         * </p>
-         *
-         * @type {Boolean}
-         * @default false
-         */
-        // this.debugShowViewerRequestVolume = Cesium.defaultValue(optionsParam.debugShowViewerRequestVolume, false);
-
-        // this._tileDebugLabels = undefined;
-        // this.debugPickedTileLabelOnly = false;
-        // this.debugPickedTile = undefined;
-        // this.debugPickPosition = undefined;
-
-        /**
-         * This property is for debugging only; it is not optimized for production use.
-         * <p>
-         * When true, draws labels to indicate the geometric error of each tile.
-         * </p>
-         *
-         * @type {Boolean}
-         * @default false
-         */
-        // this.debugShowGeometricError = Cesium.defaultValue(optionsParam.debugShowGeometricError, false);
-
-        /**
-         * This property is for debugging only; it is not optimized for production use.
-         * <p>
-         * When true, draws labels to indicate the number of commands, points, triangles and features of each tile.
-         * </p>
-         *
-         * @type {Boolean}
-         * @default false
-         */
-        // this.debugShowRenderingStatistics = Cesium.defaultValue(optionsParam.debugShowRenderingStatistics, false);
-
-        /**
-         * This property is for debugging only; it is not optimized for production use.
-         * <p>
-         * When true, draws labels to indicate the geometry and texture memory usage of each tile.
-         * </p>
-         *
-         * @type {Boolean}
-         * @default false
-         */
-        // this.debugShowMemoryUsage = Cesium.defaultValue(optionsParam.debugShowMemoryUsage, false);
-
-        /**
-         * This property is for debugging only; it is not optimized for production use.
-         * <p>
-         * When true, draws labels to indicate the url of each tile.
-         * </p>
-         *
-         * @type {Boolean}
-         * @default false
-         */
-        // this.debugShowUrl = Cesium.defaultValue(optionsParam.debugShowUrl, false);
         this._credits = undefined;
         this._isM3dDataServer = -1;
 
@@ -1369,7 +1211,6 @@ export default class MapGISM3DSet {
             Object.extend = function (destination, source) {
                 for (const property in source) {
                     if (source.hasOwnProperty(property)) {
-                        // hys 注意这里要进行检验
                         const temObj = source[property];
                         if (temObj instanceof Array) {
                             if (destination[property] !== undefined) {
@@ -1429,7 +1270,6 @@ export default class MapGISM3DSet {
             })
             .then((tilesetJson) => {
                 tilesetResource.url = tilesetResource.url.replace('M3dTopInfoData', '{dataName}');
-                let boundingVolume;
                 if (!Cesium.defined(tilesetJson.version)) {
                     that._version = '0.0';
                 } else {
@@ -1446,24 +1286,12 @@ export default class MapGISM3DSet {
                         )
                     );
                     Object.extend(tilesetJson, {
-                        // boundingVolume: {
-                        //     geoBox: tilesetJson.geoBox
-                        // },
                         refine: tilesetJson.lodType,
                         transform: that._transform
                     });
-                    // tilesetJson.transform = that._transform;
                     that._root = that.loadM3DTileSet(tilesetResource, tilesetJson);
-                    // boundingVolume = that._root.createBoundingVolume(
-                    //     tilesetJson.boundingVolume,
-                    //     Cesium.Matrix4.IDENTITY
-                    // );
                 } else {
                     that._root = that.loadM3DDataSet(tilesetResource, tilesetJson);
-                    // boundingVolume = that._root.createBoundingVolume(
-                    //     tilesetJson.root.boundingVolume,
-                    //     Cesium.Matrix4.IDENTITY
-                    // );
                 }
                 that._fieldInfo = tilesetJson.fieldInfo;
                 that._name = Cesium.defined(tilesetJson.layerName) ? tilesetJson.layerName : '';
@@ -2265,7 +2093,6 @@ export default class MapGISM3DSet {
             throw new Cesium.RuntimeError('Tileset must have an asset property.');
         }
         if (asset.version !== '0.0' && asset.version !== '1.0') {
-            // 因为修改了新版本数据的配置，所以此处兼容版本号获取方式
             if (version !== '2.0') {
                 throw new Cesium.RuntimeError('版本信息不匹配');
             }
@@ -2273,7 +2100,6 @@ export default class MapGISM3DSet {
 
         const statistics = this._statistics;
 
-        // 后面加一个版本参数 用来标识数据的版本信息.
         if (!Cesium.defined(dataSetResource.queryParameters.v)) {
             const versionQuery = {
                 v: Cesium.defaultValue(asset.tilesetVersion, '0.0')
@@ -2282,16 +2108,6 @@ export default class MapGISM3DSet {
             dataSetResource.setQueryParameters(versionQuery);
         }
 
-        // A tileset JSON file referenced from a tile may exist in a different directory than the root tileset.
-        // Get the basePath relative to the external tileset.
-        // 创建根节点.
-        // 兼容新版
-        // let content = {};
-        // if (Cesium.defined(dataSetJson.rootNode)) {
-        //     content = dataSetJson.rootNode;
-        // } else if (Cesium.defined(dataSetJson.uri)) {
-        //     content.uri = dataSetJson.uri;
-        // }
 
         const rootNode = new MapGISM3D(this, dataSetResource, dataSetJson.root, parentTile);
 
@@ -2302,8 +2118,6 @@ export default class MapGISM3DSet {
             rootNode._depth = parentTile._depth + 1;
         }
 
-        // 加载子节点.
-        // this.loadChildNode(dataSetResource,dataSetJson.root,rootNode);
         const stack = [];
         stack.push(rootNode);
 

@@ -7,7 +7,6 @@ export default class MapGISM3DTileContent{
 
         this.featurePropertiesDirty = false;
 
-        debugger
         this.initialize(this, arrayBuffer, byteOffset);
     }
 

@@ -3,6 +3,60 @@ import CachedRendererResources from './CachedRendererResources';
 import CreateIndexBufferJob from './CreateIndexBufferJob';
 import CreateVertexBufferJob from './CreateVertexBufferJob';
 
+if(Cesium.ModelUtility.toClipCoordinatesGLSL === undefined){
+    Cesium.ModelUtility.toClipCoordinatesGLSL = function(gltf, shader) {
+        var positionName = Cesium.ModelUtility.getAttributeOrUniformBySemantic(gltf, 'POSITION');
+        var decodedPositionName = positionName.replace('a_', 'gltf_a_dec_');
+        if (shader.indexOf(decodedPositionName) !== -1) {
+            positionName = decodedPositionName;
+        }
+
+        var modelViewProjectionName = Cesium.ModelUtility.getAttributeOrUniformBySemantic(gltf, 'MODELVIEWPROJECTION', undefined, true);
+        if (!Cesium.defined(modelViewProjectionName) || shader.indexOf(modelViewProjectionName) === -1) {
+            var projectionName = Cesium.ModelUtility.getAttributeOrUniformBySemantic(gltf, 'PROJECTION', undefined, true);
+            var modelViewName = Cesium.ModelUtility.getAttributeOrUniformBySemantic(gltf, 'MODELVIEW', undefined, true);
+            if (shader.indexOf('czm_instanced_modelView ') !== -1) {
+                modelViewName = 'czm_instanced_modelView';
+            } else if (!Cesium.defined(modelViewName)) {
+                modelViewName = Cesium.ModelUtility.getAttributeOrUniformBySemantic(gltf, 'CESIUM_RTC_MODELVIEW', undefined, true);
+            }
+            modelViewProjectionName = projectionName + ' * ' + modelViewName;
+        }
+
+        return modelViewProjectionName + ' * vec4(' + positionName + '.xyz, 1.0)';
+        };
+    }
+
+if( Cesium.ModelUtility.modifyVertexShaderForLogDepth === undefined){
+    Cesium.ModelUtility.modifyVertexShaderForLogDepth = function(shader, toClipCoordinatesGLSL) {
+        shader = Cesium.ShaderSource.replaceMain(shader, 'czm_depth_main');
+        shader +=
+            '\n' +
+            'void main() \n' +
+            '{ \n' +
+            '    czm_depth_main(); \n' +
+            '    czm_vertexLogDepth(' + toClipCoordinatesGLSL + '); \n' +
+            '} \n';
+
+        return shader;
+    };
+}
+
+if( Cesium.ModelUtility.modifyFragmentShaderForLogDepth === undefined){
+    Cesium.ModelUtility.modifyFragmentShaderForLogDepth = function(shader) {
+        shader = Cesium.ShaderSource.replaceMain(shader, 'czm_depth_main');
+        shader +=
+            '\n' +
+            'void main() \n' +
+            '{ \n' +
+            '    czm_depth_main(); \n' +
+            '    czm_writeLogDepth(); \n' +
+            '} \n';
+
+        return shader;
+    };
+}
+
 const boundingSphereCartesian3Scratch = new Cesium.Cartesian3();
 
 const { ModelState } = Cesium.ModelUtility;
@@ -1072,7 +1126,6 @@ function parseTextures(model, context, supportsWebP) {
 
         let bufferViewId = gltfImage.bufferView;
         let { mimeType } = gltfImage;
-        // hys
         if (mimeType === '') {
             mimeType = 'image/vnd-ms.dds';
             /// mimeType = 'image/png';
@@ -1466,19 +1519,11 @@ function createProgram(programToCreate, model, context) {
         drawVS = Cesium.ModelUtility.modifyVertexShaderForLogDepth(drawVS, toClipCoordinatesGLSL);
         drawFS = Cesium.ModelUtility.modifyFragmentShaderForLogDepth(drawFS);
     }
-    // fgy这些可以去掉
-    // if (!Cesium.defined(model._uniformMapLoaded)) {
-    //     drawFS = 'uniform vec4 czm_pickColor;\n' + drawFS;
-    // }
 
     const useIBL = model._imageBasedLightingFactor.x > 0.0 || model._imageBasedLightingFactor.y > 0.0;
     if (useIBL) {
         drawFS = `#define USE_IBL_LIGHTING \n\n${drawFS}`;
     }
-
-    // if (Cesium.defined(model._lightColor)) {
-    //     drawFS = '#define USE_CUSTOM_LIGHT_COLOR \n\n' + drawFS;
-    // }
 
     if (model._sourceVersion !== '2.0' || model._sourceKHRTechniquesWebGL) {
         drawFS = Cesium.ShaderSource.replaceMain(drawFS, 'non_gamma_corrected_main');
@@ -1540,7 +1585,7 @@ function recreateProgram(programToCreate, model, context) {
     const toClipCoordinatesGLSL = model._toClipCoordinatesGLSL[programId];
 
     const clippingPlaneCollection = model.clippingPlanes;
-    const addClippingPlaneCode = false; // isClippingEnabled(model);
+    const addClippingPlaneCode = false; 
 
     let vs = shaders[program.vertexShader];
     const fs = shaders[program.fragmentShader];
@@ -1550,12 +1595,6 @@ function recreateProgram(programToCreate, model, context) {
     }
 
     const finalFS = fs;
-    // if (isColorShadingEnabled(model)) {
-    //     finalFS = Model._modifyShaderForColor(finalFS);
-    // }
-    // if (addClippingPlaneCode) {
-    //     finalFS = modifyShaderForClippingPlanes(finalFS, clippingPlaneCollection, context);
-    // }
 
     let drawVS = modifyShader(vs, programId, model._vertexShaderLoaded);
     let drawFS = modifyShader(finalFS, programId, model._fragmentShaderLoaded);
@@ -1573,10 +1612,6 @@ function recreateProgram(programToCreate, model, context) {
     if (useIBL) {
         drawFS = `#define USE_IBL_LIGHTING \n\n${drawFS}`;
     }
-
-    // if (Cesium.defined(model._lightColor)) {
-    //     drawFS = '#define USE_CUSTOM_LIGHT_COLOR \n\n' + drawFS;
-    // }
 
     if (model._sourceVersion !== '2.0' || model._sourceKHRTechniquesWebGL) {
         drawFS = Cesium.ShaderSource.replaceMain(drawFS, 'non_gamma_corrected_main');
@@ -2069,9 +2104,6 @@ function getChannelEvaluator(model, runtimeNode, targetPath, spline) {
     return function (localAnimationTime) {
         //  Workaround for https://github.com/KhronosGroup/glTF/issues/219
 
-        // if (targetPath === 'translation') {
-        //    return;
-        // }
         if (Cesium.defined(spline)) {
             localAnimationTime = model.clampAnimations
                 ? spline.clampTime(localAnimationTime)

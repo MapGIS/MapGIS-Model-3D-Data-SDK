@@ -2,13 +2,6 @@ import { CesiumZondy } from '../core/Base';
 import MapGISM3DPointCloud from './MapGISM3DPointCloud';
 import M3DModelParser from './M3DModelParser';
 
-// // Bail out if the browser doesn't support typed arrays, to prevent the setup function
-// // from failing, since we won't be able to create a WebGL context anyway.
-// if (!Cesium.FeatureDetection.supportsTypedArrays()) {
-//     debugger
-//     return {};
-// }
-
 const sizeOfUint32 = Uint32Array.BYTES_PER_ELEMENT;
 const propertyScratch1 = new Array(4);
 
@@ -169,7 +162,6 @@ function updateModel(ownerParam, tileset, frameState) {
     const owner = ownerParam;
     const commandStart = frameState.commandList.length;
 
-    // 韩彦生.
     if (owner._model === undefined) {
         return;
     }
@@ -184,58 +176,6 @@ function updateModel(ownerParam, tileset, frameState) {
         owner._contentModelMatrix
     );
     owner._model.modelMatrix = owner._contentModelMatrix;
-
-    // owner._model.shadows = owner._tileset.shadows;
-    // owner._model.imageBasedLightingFactor = owner._tileset.imageBasedLightingFactor;
-    // owner._model.lightColor = owner._tileset.lightColor;
-    // owner._model.luminanceAtZenith = owner._tileset.luminanceAtZenith;
-    // owner._model.sphericalHarmonicCoefficients = owner._tileset.sphericalHarmonicCoefficients;
-    // owner._model.specularEnvironmentMaps = owner._tileset.specularEnvironmentMaps;
-    // owner._model.debugWireframe = owner._tileset.debugWireframe;
-
-    // Update clipping planes
-    // const tilesetClippingPlanes = owner._tileset.clippingPlanes;
-    // owner._model.clippingPlanesOriginMatrix = owner._tileset.clippingPlanesOriginMatrix;
-    // if (Cesium.defined(tilesetClippingPlanes) && owner._tile.clippingPlanesDirty) {
-    //     // Dereference the clipping planes from the model if they are irrelevant.
-    //     // Link/Dereference directly to avoid ownership checks.
-    //     // This will also trigger synchronous shader regeneration to remove or add the clipping plane and color blending code.
-    //     owner._model._clippingPlanes =
-    //         tilesetClippingPlanes.enabled && owner._tile._isClipped ? tilesetClippingPlanes : undefined;
-    // }
-
-    // If the model references a different ClippingPlaneCollection due to the tileset's collection being replaced with a
-    // ClippingPlaneCollection that gives this tile the same clipping status, update the model to use the new ClippingPlaneCollection.
-    // if (
-    //     Cesium.defined(tilesetClippingPlanes) &&
-    //     Cesium.defined(owner._model._clippingPlanes) &&
-    //     owner._model._clippingPlanes !== tilesetClippingPlanes
-    // ) {
-    //     owner._model._clippingPlanes = tilesetClippingPlanes;
-    // }
-
-    // // qwk -----------------------------------------------------
-    // if (undefined !== tileset.u_height) {
-    //     owner._model.u_height = tileset.u_height;
-    // }
-    // if (undefined !== tileset.u_isFlatten) {
-    //     owner._model.u_isFlatten = tileset.u_isFlatten;
-    // } else {
-    //     owner._model.u_isFlatten = false;
-    // }
-    // if (undefined !== tileset.u_arrayLength) {
-    //     owner._model.u_arrayLength = tileset.u_arrayLength;
-    // }
-    // if (undefined !== tileset.u_positionArray) {
-    //     owner._model.u_positionArray = tileset.u_positionArray;
-    // }
-    // // zlf --------------------------------------------------
-    // if (undefined !== tileset.u_isAttributeFilter) {
-    //     owner._model.u_isAttributeFilter = tileset.u_isAttributeFilter;
-    // }
-    // if (undefined !== tileset.u_offset) {
-    //     owner._model.u_offset = tileset.u_offset;
-    // }
 
     owner._model.update(frameState);
 
@@ -258,37 +198,8 @@ function updateInstance(ownerParam, tileset, frameState) {
     // the content's resource loading.  In the READY state, it will
     // actually generate commands.
     owner._batchTable.update(tileset, frameState);
-    // owner._modelInstanceCollection.modelMatrix = owner._tile.computedTransform;
-    // owner._modelInstanceCollection.shadows = owner._tileset.shadows;
-    // owner._modelInstanceCollection.lightColor = owner._tileset.lightColor;
-    // owner._modelInstanceCollection.luminanceAtZenith = owner._tileset.luminanceAtZenith;
-    // owner._modelInstanceCollection.sphericalHarmonicCoefficients = owner._tileset.sphericalHarmonicCoefficients;
-    // owner._modelInstanceCollection.specularEnvironmentMaps = owner._tileset.specularEnvironmentMaps;
-    // owner._modelInstanceCollection.debugWireframe = owner._tileset.debugWireframe;
 
     const model = owner._modelInstanceCollection._model;
-
-    // if (Cesium.defined(model)) {
-    //     // Update for clipping planes
-    //     const tilesetClippingPlanes = owner._tileset.clippingPlanes;
-    //     model.clippingPlanesOriginMatrix = owner._tileset.clippingPlanesOriginMatrix;
-    //     if (Cesium.defined(tilesetClippingPlanes) && owner._tile.clippingPlanesDirty) {
-    //         // Dereference the clipping planes from the model if they are irrelevant - saves on shading
-    //         // Link/Dereference directly to avoid ownership checks.
-    //         model._clippingPlanes =
-    //             tilesetClippingPlanes.enabled && owner._tile._isClipped ? tilesetClippingPlanes : undefined;
-    //     }
-
-    //     // If the model references a different ClippingPlaneCollection due to the tileset's collection being replaced with a
-    //     // ClippingPlaneCollection that gives owner tile the same clipping status, update the model to use the new ClippingPlaneCollection.
-    //     if (
-    //         Cesium.defined(tilesetClippingPlanes) &&
-    //         Cesium.defined(model._clippingPlanes) &&
-    //         model._clippingPlanes !== tilesetClippingPlanes
-    //     ) {
-    //         model._clippingPlanes = tilesetClippingPlanes;
-    //     }
-    // }
 
     owner._modelInstanceCollection.update(frameState);
 
@@ -379,13 +290,8 @@ export default class MapGISM3DDataContent {
 
         this.featurePropertiesDirty = false;
 
-        // qwk 实例化数据专用
-        // this._modelInstanceCollection = undefined;
-        // qwk 用于判断数据类型
         this._dataType = 0;
 
-        // 点云数据
-        // Only defined when batchTable is undefined
         this._pickId = undefined;
         this._styleDirty = false;
         this._pointCloud = undefined;
@@ -397,7 +303,6 @@ export default class MapGISM3DDataContent {
      * @private
      */
     static _initializeModel(param) {
-        // 初始化变量，后面需要做容错处理
         const { view } = param;
         let { byteOffset } = param;
         const { uint8Array } = param;
@@ -409,13 +314,13 @@ export default class MapGISM3DDataContent {
         const { byteStart } = param;
         const { allLength } = param;
 
-        let featureTableJsonByteLength = 0; // view.getUint32(byteOffset, true);
+        let featureTableJsonByteLength = 0; 
 
-        let featureTableBinaryByteLength = 0; // view.getUint32(byteOffset, true);
+        let featureTableBinaryByteLength = 0;
 
-        let batchTableJsonByteLength = 0; // view.getUint32(byteOffset, true);
+        let batchTableJsonByteLength = 0;
 
-        let batchTableBinaryByteLength = 0; // view.getUint32(byteOffset, true);
+        let batchTableBinaryByteLength = 0;
         if (param.tileset._version === '0.0') {
             const jsonIndexLength = view.getUint32(byteOffset, true);
             byteOffset += sizeOfUint32;
@@ -424,7 +329,6 @@ export default class MapGISM3DDataContent {
                 const jsonIndexString = Cesium.getStringFromTypedArray(uint8Array, byteOffset, jsonIndexLength);
                 byteOffset += jsonIndexLength;
                 indexJson = JSON.parse(jsonIndexString);
-                // 加载子节点
                 tileset.loadChildTileSet(resource, indexJson, parentNode);
             }
             byteOffset += sizeOfUint32;
@@ -567,30 +471,6 @@ export default class MapGISM3DDataContent {
             new Cesium.Matrix4()
         );
 
-        // PERFORMANCE_IDEA: patch the shader on demand, e.g., the first time show/color changes.
-        // The pick shader still needs to be patched.
-        // content._model = new Cesium.Model({
-        //     gltf: gltfView,
-        //     cull: false, // The model is already culled by 3D Tiles
-        //     releaseGltfJson: true, // Models are unique and will not benefit from caching so save memory
-        //     opaquePass: Cesium.Pass.CESIUM_3D_TILE, // Draw opaque portions of the model during the 3D Tiles pass
-        //     basePath: resource,
-        //     requestType: Cesium.RequestType.TILES3D,
-        //     modelMatrix: content._contentModelMatrix,
-        //     upAxis: tileset._gltfUpAxis,
-        //     forwardAxis: Cesium.Axis.X,
-        //     shadows: tileset.shadows,
-        //     debugWireframe: tileset.debugWireframe,
-        //     incrementallyLoadTextures: false,
-        //     vertexShaderLoaded: getVertexShaderCallback(content),
-        //     fragmentShaderLoaded: getFragmentShaderCallback(content),
-        //     uniformMapLoaded: batchTable.getUniformMapCallback(),
-        //     pickIdLoaded: getPickIdCallback(content),
-        //     addBatchIdToGeneratedShaders: batchLength > 0,// If the batch table has values in it, generated shaders will need a batchId attribute
-        //     pickObject:pickObject
-        //     // imageBasedLightingFactor: tileset.imageBasedLightingFactor,
-        //     // lightColor: tileset.lightColor
-        // });
         content._model = new M3DModelParser({
             gltf: gltfView,
             cull: false, // The model is already culled by 3D Tiles
@@ -611,8 +491,6 @@ export default class MapGISM3DDataContent {
             addBatchIdToGeneratedShaders: batchLength > 0, // If the batch table has values in it, generated shaders will need a batchId attribute
             pickObject,
             m3dVersion: param.tileset._version
-            // imageBasedLightingFactor: tileset.imageBasedLightingFactor,
-            // lightColor: tileset.lightColor
         });
     }
 
@@ -620,13 +498,10 @@ export default class MapGISM3DDataContent {
      * @private
      */
     static _initializeInstance(param) {
-        // 初始化变量，后面需要做容错处理
         const { view } = param;
         let { byteOffset } = param;
         const { uint8Array } = param;
         let { tileset } = param;
-        // let resource = param.resource;
-        // let parentNode = param.parentNode;
         const { arrayBuffer } = param;
         const { content } = param;
         const { byteStart } = param;
@@ -644,13 +519,9 @@ export default class MapGISM3DDataContent {
         const featureTableBinaryByteLength = view.getUint32(byteOffset, true);
         byteOffset += sizeOfUint32;
 
-        // let batchTableJsonByteLength = view.getUint32(byteOffset, true);
-        // byteOffset += sizeOfUint32;
         const batchTableJsonByteLength = 0;
 
-        // let batchTableBinaryByteLength = view.getUint32(byteOffset, true);
         const batchTableBinaryByteLength = 0;
-        // byteOffset += sizeOfUint32;
 
         const gltfFormat = view.getUint32(byteOffset, true);
         if (gltfFormat !== 1 && gltfFormat !== 0) {
@@ -660,7 +531,6 @@ export default class MapGISM3DDataContent {
         }
         byteOffset += sizeOfUint32;
 
-        // 这里暂时跳过索引部分的代码
         byteOffset += indexJsonLength;
 
         const featureTableString = Cesium.getStringFromTypedArray(uint8Array, byteOffset, featureTableJsonByteLength);
@@ -748,7 +618,6 @@ export default class MapGISM3DDataContent {
             // This removes all white space and null characters from the end of the string.
             gltfUrl = gltfUrl.replace(/[\s\0]+$/, '');
 
-            // fgy 兼容请求地址
             const resource = content._resource;
             if (resource.url.indexOf('igs/rest/g3d') > 0) {
                 const urlGlb = `${
@@ -897,22 +766,10 @@ export default class MapGISM3DDataContent {
 
         const uint8Array = new Uint8Array(arrayBuffer);
         const view = new DataView(arrayBuffer);
-        // // byteOffset += sizeOfUint32; // Skip magic
-        // // 韩彦生  这里需要在m3d后面添加一个版本号 也便于缓存文件是否清理的标识  这里读到的第一个长度为整个文件的长度
-        // // const version = view.getUint32(byteOffset, true);
-        // // if (version !== 1) {
-        // //     throw new Cesium.RuntimeError(`${'数据版本太旧, 当前数据版本为：'}${version}`);
-        // // }
-        // // byteOffset += sizeOfUint32;
-
-        // // 数据类型
-        // const dataType = view.getUint32(byteOffset, true);
-        // // byteOffset += sizeOfUint32;
-        // // const dataType =  ;
+      
         let dataType;
         if (contentParam._tileset._version === '0.0') {
             byteOffset += sizeOfUint32; // Skip magic
-            // 韩彦生  这里需要在m3d后面添加一个版本号 也便于缓存文件是否清理的标识  这里读到的第一个长度为整个文件的长度
             const version = view.getUint32(byteOffset, true);
             if (version !== 1) {
                 throw new Cesium.RuntimeError(`${'数据版本太旧, 当前数据版本为：'}${version}`);
@@ -941,41 +798,41 @@ export default class MapGISM3DDataContent {
         // 文件总长度
         const allLength = 0;
         switch (dataType) {
-            // case 0:
-            //     content._dataType = 0;
-            //     allLength = view.getUint32(byteOffset, true);
-            //     byteOffset += sizeOfUint32;
-            //     param.byteOffset = byteOffset;
-            //     param.allLength = allLength;
-            //     MapGISM3DDataContent._initializeModel(param);
-            //     break;
-            // case 1:
-            //     content._dataType = 1;
-            //     allLength = view.getUint32(byteOffset, true);
-            //     byteOffset += sizeOfUint32;
-            //     param.byteOffset = byteOffset;
-            //     param.allLength = allLength;
-            //     MapGISM3DDataContent._initializeInstance(param);
-            //     break;
-            // case 2:
-            //     content._dataType = 2;
-            //     allLength = view.getUint32(byteOffset, true);
-            //     byteOffset += sizeOfUint32;
-            //     param.byteOffset = byteOffset;
-            //     param.allLength = allLength;
-            //     content._pointCloud = new MapGISM3DPointCloud({
-            //         param,
-            //         cull: false,
-            //         opaquePass: Cesium.Pass.CESIUM_3D_TILE,
-            //         vertexShaderLoaded: getVertexShaderLoaded(content),
-            //         fragmentShaderLoaded: getFragmentShaderLoaded(content),
-            //         uniformMapLoaded: getUniformMapLoaded(content),
-            //         batchTableLoaded: getBatchTableLoaded(content),
-            //         pickIdLoaded: getPickIdLoaded(content)
-            //     });
-            //     break;
+            case 0:
+                content._dataType = 0;
+                allLength = view.getUint32(byteOffset, true);
+                byteOffset += sizeOfUint32;
+                param.byteOffset = byteOffset;
+                param.allLength = allLength;
+                MapGISM3DDataContent._initializeModel(param);
+                break;
+            case 1:
+                content._dataType = 1;
+                allLength = view.getUint32(byteOffset, true);
+                byteOffset += sizeOfUint32;
+                param.byteOffset = byteOffset;
+                param.allLength = allLength;
+                MapGISM3DDataContent._initializeInstance(param);
+                break;
+            case 2:
+                content._dataType = 2;
+                allLength = view.getUint32(byteOffset, true);
+                byteOffset += sizeOfUint32;
+                param.byteOffset = byteOffset;
+                param.allLength = allLength;
+                content._pointCloud = new MapGISM3DPointCloud({
+                    param,
+                    cull: false,
+                    opaquePass: Cesium.Pass.CESIUM_3D_TILE,
+                    vertexShaderLoaded: getVertexShaderLoaded(content),
+                    fragmentShaderLoaded: getFragmentShaderLoaded(content),
+                    uniformMapLoaded: getUniformMapLoaded(content),
+                    batchTableLoaded: getBatchTableLoaded(content),
+                    pickIdLoaded: getPickIdLoaded(content)
+                });
+                break;
             default:
-                // qwk 为了兼容旧的缓存数据
+                // 兼容旧版数据
                 content._dataType = 0;
                 param.allLength = dataType;
                 MapGISM3DDataContent._initializeModel(param);
@@ -1159,18 +1016,17 @@ export default class MapGISM3DDataContent {
     }
 
     update(tileset, frameState) {
-        // debugger;
         if (this._dataType === 0) {
             updateModel(this, tileset, frameState);
         }
-        // else if (this._dataType === 1) {
-        //     updateInstance(this, tileset, frameState);
-        // } else if (this._dataType === 2) {
-        //     // 点云
-        //     updatePointCloud(this, tileset, frameState);
-        // } else {
-        //     updateModel(this, tileset, frameState);
-        // }
+        else if (this._dataType === 1) {
+            updateInstance(this, tileset, frameState);
+        } else if (this._dataType === 2) {
+            // 点云
+            updatePointCloud(this, tileset, frameState);
+        } else {
+            updateModel(this, tileset, frameState);
+        }
     }
 
     // eslint-disable-next-line class-methods-use-this
