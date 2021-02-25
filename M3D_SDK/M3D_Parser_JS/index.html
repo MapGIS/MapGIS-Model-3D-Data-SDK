@@ -85,8 +85,8 @@
                 viewer.scene.globe.show = !false;
 
                 // 设置太阳时间
-                // const utc = Cesium.JulianDate.fromDate(new Date("2019/10/04 16:00:00"));//UTC
-                // viewer.clockViewModel.currentTime = Cesium.JulianDate.addHours(utc, 8, new Cesium.JulianDate());//北京时间=UTC+8=GMT+8
+                const utc = Cesium.JulianDate.fromDate(new Date("2019/10/04 16:00:00"));//UTC
+                viewer.clockViewModel.currentTime = Cesium.JulianDate.addHours(utc, 8, new Cesium.JulianDate());//北京时间=UTC+8=GMT+8
 
                 // 去掉Cesium符号
                 // viewer._cesiumWidget._creditContainer.style.display = 'none';
@@ -95,7 +95,7 @@
                 viewer.scene.debugShowFramesPerSecond = true;
 
                 // 开启深度测试，防止地下模型或者地形被球遮挡
-                // viewer.scene.globe.depthTestAgainstTerrain = true;
+                viewer.scene.globe.depthTestAgainstTerrain = true;
 
                 // if (Cesium.FeatureDetection.supportsImageRenderingPixelated()) {
                 //     //判断是否支持图像渲染像素化处理

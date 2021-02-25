@@ -54,9 +54,11 @@
         // "prettier/prettier": ["error", {}, { "usePrettierrc": true , "singleQuote": true, "parser": "flow" } ],
         // 在同一个作用域中禁止多次重复定义
         "no-redeclare": 1,
-
+        
         // 暂时去掉私有变量下划线的问题
-        "no-underscore-dangle": 0
+        "no-underscore-dangle": 0,
+        "eslint no-param-reassign": "true",
+        "max-classes-per-file": ["error", 3]
     },
     // 指定你想启用的环境
     "env": {

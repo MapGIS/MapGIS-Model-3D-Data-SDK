@@ -23,8 +23,8 @@ function appendM3DLayer(viewer, baseUrl, renderIndex, layerIndex, gdbpUrl, visib
         show: visible,
         igserver,
         debugShowBoundingVolume: showBoundingVolume,
-        maximumScreenSpaceError: maxScreenError,
         debugShowMemoryUsage,
+        maximumScreenSpaceError: maxScreenError,
         debugShowUrl
     });
     const tileset = viewer.scene.primitives.add(m3dLayr);

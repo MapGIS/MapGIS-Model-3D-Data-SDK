@@ -1,7 +1,7 @@
 import { CesiumZondy } from '../core/Base';
+import CachedRendererResources from './CachedRendererResources';
 import CreateIndexBufferJob from './CreateIndexBufferJob';
 import CreateVertexBufferJob from './CreateVertexBufferJob';
-import CachedRendererResources from './CachedRendererResources';
 
 const boundingSphereCartesian3Scratch = new Cesium.Cartesian3();
 
