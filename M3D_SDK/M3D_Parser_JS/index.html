@@ -59,15 +59,13 @@
                     if(version === "1.0"){
                         url = './data/景观_建筑模型/景观_建筑模型.mcj';
                         m3dTileSet = CesiumZondy.M3D.appendM3D(viewer, url, 'file', {
-                            maximumScreenSpaceError: 8,
-                            debugShowBoundingVolume: true
+                            maximumScreenSpaceError: 8
                         });
                     }
                     if(version === "2.0"){
                         url = './data/new/dayantaM3D/dayanta.mcj';
                         m3dTileSet = CesiumZondy.M3D.appendM3D(viewer, url, 'file', {
-                            maximumScreenSpaceError: 64,
-                            debugShowBoundingVolume: false
+                            maximumScreenSpaceError: 64
                         });
                     }
                 }
