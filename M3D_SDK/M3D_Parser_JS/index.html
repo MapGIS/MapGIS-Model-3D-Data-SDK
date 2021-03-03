@@ -81,15 +81,13 @@
                     timeline: false
                 });
 
-                viewer.clock.shouldAnimate = true;
-
-                viewer.scene.globe.show = !false;
+                viewer.scene.globe.show = false;
 
                 // 设置太阳时间
                 const utc = Cesium.JulianDate.fromDate(new Date("2019/10/04 16:00:00"));//UTC
                 viewer.clockViewModel.currentTime = Cesium.JulianDate.addHours(utc, 8, new Cesium.JulianDate());//北京时间=UTC+8=GMT+8
 
-                // 去掉符号
+                // 去掉Cesium符号
                 viewer._cesiumWidget._creditContainer.style.display = 'none';
 
                 //显示刷新率和帧率
