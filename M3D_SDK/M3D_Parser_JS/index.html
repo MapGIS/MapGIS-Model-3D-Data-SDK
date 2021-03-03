@@ -74,17 +74,12 @@
             function startup(Cesium) {
                 'use strict';
                 
-                var webGlobe = new Cesium.WebSceneControl('cesiumContainer', {
-                        terrainExaggeration: 1,
-                        requestRenderMode: true
-                    });
-                viewer = webGlobe.viewer;
-                // viewer = new Cesium.Viewer('cesiumContainer', {
-                //     terrainExaggeration: 1,
-                //     requestRenderMode: true,
-                //     animation: false,
-                //     timeline: false
-                // });
+                viewer = new Cesium.Viewer('cesiumContainer', {
+                    terrainExaggeration: 1,
+                    requestRenderMode: true,
+                    animation: false,
+                    timeline: false
+                });
 
                 viewer.clock.shouldAnimate = true;
 
@@ -113,21 +108,11 @@
                 viewer.scene.postProcessStages.fxaa.enabled = true;
 
                 // 加载文件服务数据 
-                // M3D Version 1.0 示例
-
-                // let url = './data/景观_建筑模型/景观_建筑模型.mcj';
-                // CesiumZondy.M3D.appendM3D(viewer, url, 'file', {
-                //     maximumScreenSpaceError: 16,
-                //     debugShowBoundingVolume: false
-                // });
-
-                // M3D 团体标准数据
                 let url = './data/new/dayantaM3D/dayanta.mcj';
                 m3dTileSet = CesiumZondy.M3D.appendM3D(viewer, url, 'file', {
                     maximumScreenSpaceError: 64,
                     debugShowBoundingVolume: false
                 });
-                // url = './data/new/dayantaM3D/dayanta.mcj';
 
                 // 加载igs服务数据
                 // url = 'http://develop.smaryun.com:6163/igs/rest/g3d/ZondyModels';
