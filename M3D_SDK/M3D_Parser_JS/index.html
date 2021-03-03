@@ -10,8 +10,8 @@
         <title>Load M3D</title>
 
         <script type="text/javascript" src="./libs/Cesium/Cesium.js"></script>
-        <!-- <script type="text/javascript" src="./dist/m3d-layer-min.js"></script> -->
-        <script type="text/javascript" src="./dist/m3d-layer-debug.js"></script>
+        <script type="text/javascript" src="./dist/m3d-layer-min.js"></script>
+        <!-- <script type="text/javascript" src="./dist/m3d-layer-debug.js"></script> -->
     </head>
 
     <body>
@@ -27,59 +27,65 @@
                 padding: 0;
                 overflow: hidden;
             }
+             .control {
+            position: absolute;
+            min-width: 166px;
+            background: rgba(48, 51, 54, 0.7);
+            top: 10px;
+            left: 10px;
+            color: white;
+            font-size: 14px;
+            padding: 20px;
+        }
         </style>
         <div id="cesiumContainer" class="fullSize"></div>
+        <div class="control">
+            <div>
+            <label><input type="radio" name="type" value="2.0" checked="checked" onchange="selectOnchang(value)"/>大雁塔(团体标准M3D)</label>
+        </div>
+        <div>
+            <label><input type="radio" name="type" value="1.0" onchange="selectOnchang(value)"/>景观模型</label>
+        </div>
+ 
         <script id="cesium_sandcastle_script">
+            let viewer = undefined;
+            let m3dTileSet = undefined;
+            function selectOnchang(version){
+                    if(viewer === undefined){
+                        return;
+                    }
+                    let url ;
+                    CesiumZondy.M3D.removeM3dLayer(viewer,m3dTileSet[0]);
+                    if(version === "1.0"){
+                        url = './data/景观_建筑模型/景观_建筑模型.mcj';
+                        m3dTileSet = CesiumZondy.M3D.appendM3D(viewer, url, 'file', {
+                            maximumScreenSpaceError: 8,
+                            debugShowBoundingVolume: true
+                        });
+                    }
+                    if(version === "2.0"){
+                        url = './data/new/dayantaM3D/dayanta.mcj';
+                        m3dTileSet = CesiumZondy.M3D.appendM3D(viewer, url, 'file', {
+                            maximumScreenSpaceError: 64,
+                            debugShowBoundingVolume: false
+                        });
+                    }
+                }
             function startup(Cesium) {
                 'use strict';
-
-                function appendModel(id, url, lon, lat, height, scale, options) {
-                    var position = Cartesian3.fromDegrees(lon, lat, height);
-                    //var heading = CesiumMath.toRadians(-90);
-                    //var pitch = 0;
-                    //var roll = 0;
-                    //var hpr = new HeadingPitchRoll(heading, pitch, roll);
-                    //var orientation = Transforms.headingPitchRollQuaternion(position, hpr);
-                    //var modelObj = {
-                    //    uri: url,
-                    //    minimumPixelSize: 128,
-                    //    maximumScale: scale
-                    //};
-                    //var height = 250000.0;
-                    var modelMatrix = Transforms.headingPitchRollToFixedFrame(position, new HeadingPitchRoll());
-                    var modelObj = {
-                        id: id,
-                        url: url,
-                        modelMatrix: modelMatrix,
-
-                        scale: scale
-                    };
-                    if (defined(options)) {
-                        Object.extend(modelObj, options);
-                    }
-
-                    var modelSingle = this.scene.primitives.add(Model.fromGltf(modelObj));
-                    modelSingle.readyPromise.then(function () {
-                        modelSingle.activeAnimations.addAll({
-                            speedup: 0.5,
-                            loop: ModelAnimationLoop.REPEAT
-                        });
+                
+                var webGlobe = new Cesium.WebSceneControl('cesiumContainer', {
+                        terrainExaggeration: 1,
+                        requestRenderMode: true
                     });
-
-                    return modelSingle;
-                }
-                const viewer = new Cesium.Viewer('cesiumContainer', {
-                    terrainExaggeration: 1,
-                    requestRenderMode: true,
-                    animation: false,
-                    timeline: false
-                });
-                // var webGlobe = new Cesium.WebSceneControl('cesiumContainer', {
+                viewer = webGlobe.viewer;
+                // viewer = new Cesium.Viewer('cesiumContainer', {
                 //     terrainExaggeration: 1,
-                //     requestRenderMode: true
+                //     requestRenderMode: true,
+                //     animation: false,
+                //     timeline: false
                 // });
-                // const viewer = webGlobe.viewer;
-                // webGlobe.showPosition();
+
                 viewer.clock.shouldAnimate = true;
 
                 viewer.scene.globe.show = !false;
@@ -88,8 +94,8 @@
                 const utc = Cesium.JulianDate.fromDate(new Date("2019/10/04 16:00:00"));//UTC
                 viewer.clockViewModel.currentTime = Cesium.JulianDate.addHours(utc, 8, new Cesium.JulianDate());//北京时间=UTC+8=GMT+8
 
-                // 去掉Cesium符号
-                // viewer._cesiumWidget._creditContainer.style.display = 'none';
+                // 去掉符号
+                viewer._cesiumWidget._creditContainer.style.display = 'none';
 
                 //显示刷新率和帧率
                 viewer.scene.debugShowFramesPerSecond = true;
@@ -97,45 +103,31 @@
                 // 开启深度测试，防止地下模型或者地形被球遮挡
                 viewer.scene.globe.depthTestAgainstTerrain = true;
 
-                // if (Cesium.FeatureDetection.supportsImageRenderingPixelated()) {
-                //     //判断是否支持图像渲染像素化处理
-                //     viewer.resolutionScale = window.devicePixelRatio;
-                // }
+                if (Cesium.FeatureDetection.supportsImageRenderingPixelated()) {
+                    //判断是否支持图像渲染像素化处理
+                    viewer.resolutionScale = window.devicePixelRatio;
+                }
 
                 //开启抗锯齿
                 viewer.scene.fxaa = true;
                 viewer.scene.postProcessStages.fxaa.enabled = true;
 
-                // 加载文件服务数据
-                let url = './data/景观_建筑模型/景观_建筑模型.mcj';
-                 url = './data/m3d-sample/m3d-sample.mcj';
+                // 加载文件服务数据 
+                // M3D Version 1.0 示例
+
+                // let url = './data/景观_建筑模型/景观_建筑模型.mcj';
                 // CesiumZondy.M3D.appendM3D(viewer, url, 'file', {
-                //     maximumScreenSpaceError: 16
+                //     maximumScreenSpaceError: 16,
+                //     debugShowBoundingVolume: false
                 // });
-                url = './data/new/dayantaM3D/dayanta.mcj';
-                //  url = './data/m3d-sample - 副本/m3d-sample.mcj';
-                CesiumZondy.M3D.appendM3D(viewer, url, 'file', {
+
+                // M3D 团体标准数据
+                let url = './data/new/dayantaM3D/dayanta.mcj';
+                m3dTileSet = CesiumZondy.M3D.appendM3D(viewer, url, 'file', {
                     maximumScreenSpaceError: 64,
                     debugShowBoundingVolume: false
                 });
-
-                //    var modelUrl = '../data/test.glb';
-                //    var model = webGlobe.appendModel('1', modelUrl, 114.33, 30.5, 20.0, 1, {
-                //         color: Cesium.Color.RED,
-                //         colorBlendMode: Cesium.ColorBlendMode.MIX,//  MIX是混合 Cesium.ColorBlendMode.HIGHLIGHT, HIGHLIGHT是高亮
-                //         colorBlendAmount: 0.4 //这个是程度
-                //     });
-                //     model.debugShowBoundingVolume = true;
-
-                //拾取gltf
-                var pick = new Cesium.ScreenSpaceEventHandler(viewer.canvas);
-
-                pick.setInputAction(function leftClick(click) {
-                    debugger;
-                    var pickedFeature = viewer.scene.pick(click.position);
-                }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
-
-                // webGlobe.flyTo(114.33,30.5,200,2);
+                // url = './data/new/dayantaM3D/dayanta.mcj';
 
                 // 加载igs服务数据
                 // url = 'http://develop.smaryun.com:6163/igs/rest/g3d/ZondyModels';

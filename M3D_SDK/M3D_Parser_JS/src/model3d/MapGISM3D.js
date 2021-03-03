@@ -435,6 +435,7 @@ export default class MapGISM3D {
 
     constructor(tileset, baseResourceParam, header, parent) {
         let baseResource = baseResourceParam;
+        console.log(header)
         this._tileset = tileset;
         this._header = header;
         let contentHeader = header.content;
@@ -460,6 +461,7 @@ export default class MapGISM3D {
          */
         this.computedTransform = computedTransform;
 
+        console.log(header.boundingVolume);
         this._boundingVolume = this.createBoundingVolume(header.boundingVolume, computedTransform);
         this._boundingVolume2D = undefined;
 

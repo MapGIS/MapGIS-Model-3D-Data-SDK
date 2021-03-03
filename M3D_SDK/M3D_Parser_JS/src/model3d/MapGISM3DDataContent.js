@@ -321,6 +321,7 @@ export default class MapGISM3DDataContent {
         let batchTableJsonByteLength = 0;
 
         let batchTableBinaryByteLength = 0;
+
         if (param.tileset._version === '0.0') {
             const jsonIndexLength = view.getUint32(byteOffset, true);
             byteOffset += sizeOfUint32;
@@ -329,10 +330,10 @@ export default class MapGISM3DDataContent {
                 const jsonIndexString = Cesium.getStringFromTypedArray(uint8Array, byteOffset, jsonIndexLength);
                 byteOffset += jsonIndexLength;
                 indexJson = JSON.parse(jsonIndexString);
+                console.log(indexJson);
                 tileset.loadChildTileSet(resource, indexJson, parentNode);
             }
             byteOffset += sizeOfUint32;
-
             featureTableJsonByteLength = view.getUint32(byteOffset, true);
             byteOffset += sizeOfUint32;
 
@@ -470,7 +471,7 @@ export default class MapGISM3DDataContent {
             content._rtcCenterTransform,
             new Cesium.Matrix4()
         );
-
+            
         content._model = new M3DModelParser({
             gltf: gltfView,
             cull: false, // The model is already culled by 3D Tiles

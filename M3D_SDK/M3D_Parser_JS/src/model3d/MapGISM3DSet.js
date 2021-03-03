@@ -1277,7 +1277,6 @@ export default class MapGISM3DSet {
                 }
 
                 if (that._version === '2.0') {
-                    console.log(that._version);
                     that._transform = Cesium.Transforms.eastNorthUpToFixedFrame(
                         Cesium.Cartesian3.fromDegrees(
                             tilesetJson.position.x,
@@ -2058,12 +2057,13 @@ export default class MapGISM3DSet {
                         if (childHeader.geometricError < this._baseMinError) {
                             childHeader.geometricError = 0;
                         }
-                        const childTile = new _MapGISM3D__WEBPACK_IMPORTED_MODULE_1__.default(
+                        const childTile = new MapGISM3D(
                             this,
                             m3dSetResource,
                             childHeader,
                             parentNode
                         );
+                        console.log(2);
                         parentNode.children.push(childTile);
                         parentNode.childrenNameList.push(childHeader.content.uri);
                         childTile._depth = parentNode._depth + 1;
