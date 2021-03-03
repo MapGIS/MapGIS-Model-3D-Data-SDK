@@ -10,8 +10,8 @@
         <title>Load M3D</title>
 
         <script type="text/javascript" src="./libs/Cesium/Cesium.js"></script>
-        <!-- <script type="text/javascript" src="./dist/m3d-layer-min.js"></script> -->
-        <script type="text/javascript" src="./dist/m3d-layer-debug.js"></script>
+        <script type="text/javascript" src="./dist/m3d-layer-min.js"></script>
+        <!-- <script type="text/javascript" src="./dist/m3d-layer-debug.js"></script> -->
     </head>
 
     <body>
@@ -27,13 +27,54 @@
                 padding: 0;
                 overflow: hidden;
             }
+             .control {
+            position: absolute;
+            min-width: 166px;
+            background: rgba(48, 51, 54, 0.7);
+            top: 10px;
+            left: 10px;
+            color: white;
+            font-size: 14px;
+            padding: 20px;
+        }
         </style>
         <div id="cesiumContainer" class="fullSize"></div>
+        <div class="control">
+            <div>
+            <label><input type="radio" name="type" value="2.0" checked="checked" onchange="selectOnchang(value)"/>大雁塔(团体标准M3D)</label>
+        </div>
+        <div>
+            <label><input type="radio" name="type" value="1.0" onchange="selectOnchang(value)"/>景观模型</label>
+        </div>
+ 
         <script id="cesium_sandcastle_script">
+            let viewer = undefined;
+            let m3dTileSet = undefined;
+            function selectOnchang(version){
+                    if(viewer === undefined){
+                        return;
+                    }
+                    let url ;
+                    CesiumZondy.M3D.removeM3dLayer(viewer,m3dTileSet[0]);
+                    if(version === "1.0"){
+                        url = './data/景观_建筑模型/景观_建筑模型.mcj';
+                        m3dTileSet = CesiumZondy.M3D.appendM3D(viewer, url, 'file', {
+                            maximumScreenSpaceError: 8,
+                            debugShowBoundingVolume: true
+                        });
+                    }
+                    if(version === "2.0"){
+                        url = './data/new/dayantaM3D/dayanta.mcj';
+                        m3dTileSet = CesiumZondy.M3D.appendM3D(viewer, url, 'file', {
+                            maximumScreenSpaceError: 64,
+                            debugShowBoundingVolume: false
+                        });
+                    }
+                }
             function startup(Cesium) {
                 'use strict';
-
-                const viewer = new Cesium.Viewer('cesiumContainer', {
+                
+                viewer = new Cesium.Viewer('cesiumContainer', {
                     terrainExaggeration: 1,
                     requestRenderMode: true,
                     animation: false,
@@ -64,10 +105,11 @@
                 viewer.scene.fxaa = true;
                 viewer.scene.postProcessStages.fxaa.enabled = true;
 
-                // 加载文件服务数据
-                let url = './data/景观_建筑模型/景观_建筑模型.mcj';
-                CesiumZondy.M3D.appendM3D(viewer, url, 'file', {
-                    maximumScreenSpaceError: 16
+                // 加载文件服务数据 
+                let url = './data/new/dayantaM3D/dayanta.mcj';
+                m3dTileSet = CesiumZondy.M3D.appendM3D(viewer, url, 'file', {
+                    maximumScreenSpaceError: 64,
+                    debugShowBoundingVolume: false
                 });
 
                 // 加载igs服务数据

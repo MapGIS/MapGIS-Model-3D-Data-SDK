@@ -2,6 +2,24 @@ import { CesiumZondy } from './core/Base';
 import LayerType from './model3d/LayerType';
 import MapGISM3DSet from './model3d/MapGISM3DSet';
 
+/**
+ *
+ * @param {Object} viewer 视图对象
+ * @param {Object} m3dLayer 删除对象
+ * @example
+ * // 使用文件服务
+ * let url = './data/景观_建筑模型/景观_建筑模型.mcj';
+ * let m3dLayer = CesiumZondy.M3D.appendM3D(viewer, url, 'file', { maximumScreenSpaceError: 16 });
+ *
+ * // 使用 igs 服务
+ * url = 'http://develop.smaryun.com:6163/igs/rest/g3d/ZondyModels';
+ * CesiumZondy.M3D.removeM3dLayer(viewer, m3dLayer);
+ */
+export function removeM3dLayer(viewer,m3dLayer) {
+    if(m3dLayer !== undefined){
+        viewer.scene.primitives.remove(m3dLayer);
+    }
+}
 function zoomToM3dLayer(viewer, layer) {
     const { boundingSphere } = layer;
     viewer.camera.viewBoundingSphere(boundingSphere, new Cesium.HeadingPitchRange(0.0, -0.5, boundingSphere.radius));
@@ -23,8 +41,8 @@ function appendM3DLayer(viewer, baseUrl, renderIndex, layerIndex, gdbpUrl, visib
         show: visible,
         igserver,
         debugShowBoundingVolume: showBoundingVolume,
-        maximumScreenSpaceError: maxScreenError,
         debugShowMemoryUsage,
+        maximumScreenSpaceError: maxScreenError,
         debugShowUrl
     });
     const tileset = viewer.scene.primitives.add(m3dLayr);
@@ -78,12 +96,12 @@ function loadM3DByFile(viewer, options) {
                 new Cesium.HeadingPitchRange(0.0, -0.5, boundingSphere.radius)
             );
             viewer.camera.lookAtTransform(Cesium.Matrix4.IDENTITY);
-            const cartographic = Cesium.Cartographic.fromCartesian(layer.boundingSphere.center);
-            const surface = Cesium.Cartesian3.fromRadians(cartographic.longitude, cartographic.latitude, 0.0);
-            const offset = Cesium.Cartesian3.fromRadians(cartographic.longitude, cartographic.latitude, -0.5);
-            const translation = Cesium.Cartesian3.subtract(offset, surface, new Cesium.Cartesian3());
-            const tmpLayer = layer;
-            tmpLayer.modelMatrix = Cesium.Matrix4.fromTranslation(translation);
+            // const cartographic = Cesium.Cartographic.fromCartesian(layer.boundingSphere.center);
+            // const surface = Cesium.Cartesian3.fromRadians(cartographic.longitude, cartographic.latitude, 0.0);
+            // const offset = Cesium.Cartesian3.fromRadians(cartographic.longitude, cartographic.latitude, 0.0);
+            // const translation = Cesium.Cartesian3.subtract(offset, surface, new Cesium.Cartesian3());
+            // const tmpLayer = layer;
+            // tmpLayer.modelMatrix = Cesium.Matrix4.fromTranslation(translation);
         })
         .otherwise((error) => {
             throw error;
@@ -157,5 +175,5 @@ export default function appendM3D(viewer, url, type, options) {
 
     return docLayers;
 }
-
+CesiumZondy.M3D.removeM3dLayer = removeM3dLayer;
 CesiumZondy.M3D.appendM3D = appendM3D;

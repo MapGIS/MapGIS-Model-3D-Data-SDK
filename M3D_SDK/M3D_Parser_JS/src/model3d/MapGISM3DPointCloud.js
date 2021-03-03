@@ -13,7 +13,7 @@ const sizeOfUint32 = Uint32Array.BYTES_PER_ELEMENT;
 
 function initialize(pointCloudParam, options) {
     const pointCloud = pointCloudParam;
-    // 初始化变量，后面需要做容错处理
+    // 初始化变量，后面需要做容错处理.
     const { view } = options.param;
     let { byteOffset } = options.param;
     const { uint8Array } = options.param;
@@ -43,11 +43,11 @@ function initialize(pointCloudParam, options) {
     const batchTableBinaryByteLength = view.getUint32(byteOffset, true);
     byteOffset += sizeOfUint32;
 
-    // 临时将此处的点云索引取出，以待后用
+    // 临时将此处的点云索引取出，以待后用.
     if (indexJsonLength > 0) {
         const indexTableString = Cesium.getStringFromTypedArray(uint8Array, byteOffset, indexJsonLength);
         const indexJson = JSON.parse(indexTableString);
-        // 加载子节点
+        // 加载子节点.
         tileset.loadChildTileSet(resource, indexJson, parentNode);
     }
     byteOffset += indexJsonLength;
@@ -416,7 +416,6 @@ function createResources(pointCloudParam, frameState) {
             }
         });
 
-        // }
     }
 
     const positionsVertexBuffer = Cesium.Buffer.createVertexBuffer({

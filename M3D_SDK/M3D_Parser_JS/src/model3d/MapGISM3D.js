@@ -1,6 +1,8 @@
 import { CesiumZondy } from '../core/Base';
-import { Zlib } from '../thirdParty/inflate.min';
+import { Zlib } from '../thirdParty/unzip.min';
+import { inflate } from '../thirdParty/pako_inflate';
 import MapGISM3DDataContent from './MapGISM3DDataContent';
+import MapGISM3DTileContent from './MapGISM3DTileContent';
 
 const { deprecationWarning } = Cesium;
 
@@ -200,7 +202,7 @@ function createBox(box, transform, result) {
     // let rotationScale = Cesium.Matrix4.getRotation(transform, scratchMatrix);
 
     let rotationScale;
-    // qwk 此处新版本的接口发生了变动
+
     if (Cesium.defined(Cesium.Matrix4.getRotation)) {
         rotationScale = Cesium.Matrix4.getRotation(transform, scratchMatrix);
     } else {
@@ -244,7 +246,7 @@ function createBoxFromTransformedRegion(region, transformParam, initialTransform
 
     // let rotationScale = Cesium.Matrix4.getRotation(transform, scratchMatrix);
     let rotationScale;
-    // qwk 此处新版本的接口发生了变动
+
     if (Cesium.defined(Cesium.Matrix4.getRotation)) {
         rotationScale = Cesium.Matrix4.getRotation(transform, scratchMatrix);
     } else {
@@ -295,6 +297,12 @@ function createSphere(sphere, transform, result) {
         return result;
     }
     return new Cesium.TileBoundingSphere(center, radius);
+}
+
+function createBoundingBox(box, transform, initialTransform, result) {
+    const region = [box.left, box.bottom, box.right, box.top, box.minHeight, box.maxHeight];
+
+    return createRegion(region, transform, initialTransform, result);
 }
 
 function applyDebugSettings(tileParam, tileset, frameState) {
@@ -410,7 +418,6 @@ function updateClippingPlanes(tileParam, tileset) {
 const scratchCommandList = [];
 
 function isolateDigits(normalizedValue, numberOfDigits, leftShift) {
-    // const scaled = normalizedValue * Math.pow(10, numberOfDigits);
     const scaled = normalizedValue * 10 ** numberOfDigits;
     const integer = parseInt(scaled, 10);
     return integer * 10 ** leftShift;
@@ -428,9 +435,10 @@ export default class MapGISM3D {
 
     constructor(tileset, baseResourceParam, header, parent) {
         let baseResource = baseResourceParam;
+        console.log(header)
         this._tileset = tileset;
         this._header = header;
-        const contentHeader = header.content;
+        let contentHeader = header.content;
 
         /**
          * The local transform of this tile.
@@ -453,6 +461,7 @@ export default class MapGISM3D {
          */
         this.computedTransform = computedTransform;
 
+        console.log(header.boundingVolume);
         this._boundingVolume = this.createBoundingVolume(header.boundingVolume, computedTransform);
         this._boundingVolume2D = undefined;
 
@@ -483,6 +492,20 @@ export default class MapGISM3D {
          * @readonly
          */
         this.geometricError = header.geometricError;
+
+        if (tileset._version === '2.0') {
+            contentHeader = Cesium.defined(header.rootNode) ? header.rootNode.uri : header.uri;
+            if (!Cesium.defined(contentHeader)) {
+                const { tileDataInfoIndex } = header;
+                if (Cesium.defined(tileDataInfoIndex)) {
+                    const tileDataInfo = header.tileDataInfoList[tileDataInfoIndex];
+
+                    // 暂时这么处理
+                    contentHeader = tileDataInfo.tileData.uri;
+                }
+            }
+            this.geometricError = Cesium.defaultValue(header.lodError, 10000000);
+        }
 
         if (!Cesium.defined(this.geometricError)) {
             this.geometricError = Cesium.defined(parent) ? parent.geometricError : tileset._geometricError;
@@ -555,18 +578,22 @@ export default class MapGISM3D {
         baseResource = Cesium.Resource.createIfNeeded(baseResource);
 
         if (Cesium.defined(contentHeader)) {
-            let contentHeaderUri = contentHeader.uri;
-            if (Cesium.defined(contentHeader.url)) {
-                MapGISM3D._deprecationWarning(
-                    'contentUrl',
-                    'This tileset JSON uses the "content.url" property which has been deprecated. Use "content.uri" instead.'
-                );
-                contentHeaderUri = contentHeader.url;
+            let contentHeaderUri = contentHeader;
+            if (Cesium.defined(contentHeaderUri.uri)) {
+                contentHeaderUri = contentHeader.uri;
             }
 
             hasEmptyContent = false;
             contentState = Cesium.Cesium3DTileContentState.UNLOADED;
             if (!this._tileset._isIGServer) {
+                if (this._tileset._version === '2.0' && contentHeaderUri.indexOf('../') === 0) {
+                    // 新数据路径
+                    let tempUri = baseResource._url;
+                    tempUri = tempUri.substring(0, tempUri.indexOf('node') + 5) + contentHeaderUri.substring(3);
+                    baseResource._url = tempUri;
+                    contentHeaderUri = contentHeaderUri.substring(5);
+                }
+
                 contentResource = baseResource.getDerivedResource({
                     url: contentHeaderUri
                 });
@@ -585,29 +612,21 @@ export default class MapGISM3D {
                 }
 
                 if (contentHeaderUri.indexOf('..') === 0) {
-                    // fgy 兼容优化后m3d数据请求地址
                     contentHeaderUri = contentHeaderUri.replace('..', 'data');
                 }
 
                 contentResource.url = contentResource.url.replace('datatype=10', 'datatype=11');
-                // 韩彦生 添加对m3d 地理服务图层的判断支持
                 if (this._tileset._isM3dDataServer > -1) {
-                    // contentHeaderUri = contentHeaderUri.replace('/','\\');
-                    // contentHeaderUri = contentHeaderUri.replace('/','\\');
-                    // contentResource.url = contentResource.url +'&dataName='+ encodeURIComponent(dataName +contentHeaderUri)+ '&compress=false';
-                    // contentResource.url = contentResource.url.replace('{dataName}',encodeURIComponent(dataName +contentHeaderUri)) ;///+ '&compress=false';
+                    contentResource.url.replace('{dataName}', encodeURIComponent(dataName + contentHeaderUri)); /// + '&compress=false';
                     contentResource.url = `${
                         contentResource.url.substring(0, contentResource.url.lastIndexOf('&dataName=') + 10) +
                         encodeURIComponent(dataName + contentHeaderUri)
-                    }&webGL=true`; /// + '&compress=false';
+                    }&webGL=true`;
                 } else {
-                    // contentResource._url = contentResource.url;//这里是为方便子节点使用
-                    // hys 对地址中有+ 等特殊字符的做编码处理 不然会把这些特殊字符漏掉 encodeURIComponent
                     contentResource.url = `${contentResource.url.substring(
                         0,
                         contentResource.url.lastIndexOf('datatype=') + 11
                     )}&dataName=${encodeURIComponent(dataName + contentHeaderUri)}&webGL=true&compress=false`;
-                    // contentResource.url = contentResource.url.replace('{dataName}', contentHeaderUrl);
                 }
             }
             serverKey = Cesium.RequestScheduler.getServerKey(contentResource.getUrlComponent());
@@ -770,6 +789,7 @@ export default class MapGISM3D {
 
         this._color = undefined;
         this._colorDirty = false;
+        this._requestNode = false;
     }
 
     /**
@@ -1159,17 +1179,29 @@ export default class MapGISM3D {
                 let uint8Array = new Uint8Array(arrayBuffer);
                 let magic = Cesium.getMagic(uint8Array);
 
+                if (magic === 'PK') {
+                    const unzip = new Zlib.Unzip(uint8Array, {});
+                    const files = {};
+                    const filenames = unzip.getFilenames();
+                    let i;
+                    let il;
+
+                    for (i = 0, il = filenames.length; i < il; ++i) {
+                        files[filenames[i]] = unzip.decompress(filenames[i]);
+                        if (files[filenames[i]].length > 0) {
+                            arrayBuffer = files[filenames[i]].buffer;
+                        }
+                    }
+                    magic = 'm3d';
+                }
                 if (magic === 'zipx') {
                     uint8Array = uint8Array.slice(3);
-
-                    const inflator = new Zlib.Inflate(uint8Array);
-                    const inflated = inflator.decompress();
-
-                    arrayBuffer = inflated.buffer;
+                    const inflator = inflate(uint8Array);
+                    arrayBuffer = inflator.buffer;
+                    magic = 'm3d';
                 }
 
-                magic = 'm3d';
-                if (!Cesium.defined(Cesium.Cesium3DTileContentFactory.m3d)) {
+                if (!Cesium.defined(Cesium.Cesium3DTileContentFactory.md)) {
                     Cesium.Cesium3DTileContentFactory.m3d = (
                         tilesetParam,
                         tileParam,
@@ -1187,7 +1219,6 @@ export default class MapGISM3D {
                     };
                 }
                 const contentFactory = Cesium.Cesium3DTileContentFactory[magic];
-                // const contentFactory = M3DTileContentFactory[magic];
                 let content;
 
                 // Vector and Geometry tile rendering do not support the skip LOD optimization.
@@ -1197,15 +1228,14 @@ export default class MapGISM3D {
                 if (Cesium.defined(contentFactory)) {
                     content = contentFactory(tileset, that, that._contentResource, arrayBuffer, 0);
                 } else {
-                    // 此处单独创建 M3D 数据对象，不从 Factory 中获取
-                    content = new MapGISM3DDataContent(tileset, that, that._contentResource, arrayBuffer, 0);
+                    const indexJson = Cesium.getStringFromTypedArray(uint8Array);
+                    content = new MapGISM3DTileContent(tileset, that, that._contentResource, arrayBuffer, 0);
 
                     that.hasTilesetContent = true;
                 }
                 that._content = content;
                 that._contentState = Cesium.Cesium3DTileContentState.PROCESSING;
                 that._contentReadyToProcessPromise.resolve(content);
-                // 韩彦生
                 if (content.readyPromise === undefined) {
                     return;
                 }
@@ -1230,7 +1260,6 @@ export default class MapGISM3D {
                 });
             })
             .otherwise((error) => {
-                // debugger
                 if (request.state === Cesium.RequestState.CANCELLED) {
                     // Cancelled due to low priority - try again later.
                     that._contentState = contentState;
@@ -1406,6 +1435,9 @@ export default class MapGISM3D {
         }
         if (Cesium.defined(boundingVolumeHeader.sphere)) {
             return createSphere(boundingVolumeHeader.sphere, transform, result);
+        }
+        if (Cesium.defined(boundingVolumeHeader.boundingBox)) {
+            return createBoundingBox(boundingVolumeHeader.boundingBox, transform, this._initialTransform, result);
         }
         throw new Cesium.RuntimeError('boundingVolume must contain a sphere, region, or box');
     }
