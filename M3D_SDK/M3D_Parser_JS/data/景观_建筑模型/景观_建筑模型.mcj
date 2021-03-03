@@ -92,6 +92,5 @@
                 }
             }
         ]
-    },
-	"uri" : "rootNode.json"
+    }
 }
