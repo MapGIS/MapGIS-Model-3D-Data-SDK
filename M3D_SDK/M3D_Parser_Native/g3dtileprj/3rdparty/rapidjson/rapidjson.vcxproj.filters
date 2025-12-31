@@ -1,0 +1,79 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="error">
+      <UniqueIdentifier>{288b434c-ba81-4d01-8268-defd27a7244f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="internal">
+      <UniqueIdentifier>{64f9804c-076e-4cba-bcea-e31fefeea9c6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="msinttypes">
+      <UniqueIdentifier>{e658b2fb-5c66-41d0-9230-00b0ea2089cc}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="error\en.h">
+      <Filter>error</Filter>
+    </ClInclude>
+    <ClInclude Include="error\error.h">
+      <Filter>error</Filter>
+    </ClInclude>
+    <ClInclude Include="internal\biginteger.h">
+      <Filter>internal</Filter>
+    </ClInclude>
+    <ClInclude Include="internal\diyfp.h">
+      <Filter>internal</Filter>
+    </ClInclude>
+    <ClInclude Include="internal\dtoa.h">
+      <Filter>internal</Filter>
+    </ClInclude>
+    <ClInclude Include="internal\ieee754.h">
+      <Filter>internal</Filter>
+    </ClInclude>
+    <ClInclude Include="internal\itoa.h">
+      <Filter>internal</Filter>
+    </ClInclude>
+    <ClInclude Include="internal\meta.h">
+      <Filter>internal</Filter>
+    </ClInclude>
+    <ClInclude Include="internal\pow10.h">
+      <Filter>internal</Filter>
+    </ClInclude>
+    <ClInclude Include="internal\regex.h">
+      <Filter>internal</Filter>
+    </ClInclude>
+    <ClInclude Include="internal\stack.h">
+      <Filter>internal</Filter>
+    </ClInclude>
+    <ClInclude Include="internal\strfunc.h">
+      <Filter>internal</Filter>
+    </ClInclude>
+    <ClInclude Include="internal\strtod.h">
+      <Filter>internal</Filter>
+    </ClInclude>
+    <ClInclude Include="internal\swap.h">
+      <Filter>internal</Filter>
+    </ClInclude>
+    <ClInclude Include="allocators.h" />
+    <ClInclude Include="cursorstreamwrapper.h" />
+    <ClInclude Include="document.h" />
+    <ClInclude Include="encodedstream.h" />
+    <ClInclude Include="encodings.h" />
+    <ClInclude Include="filereadstream.h" />
+    <ClInclude Include="filewritestream.h" />
+    <ClInclude Include="fwd.h" />
+    <ClInclude Include="istreamwrapper.h" />
+    <ClInclude Include="memorybuffer.h" />
+    <ClInclude Include="memorystream.h" />
+    <ClInclude Include="ostreamwrapper.h" />
+    <ClInclude Include="pointer.h" />
+    <ClInclude Include="prettywriter.h" />
+    <ClInclude Include="rapidjson.h" />
+    <ClInclude Include="reader.h" />
+    <ClInclude Include="schema.h" />
+    <ClInclude Include="stream.h" />
+    <ClInclude Include="stringbuffer.h" />
+    <ClInclude Include="writer.h" />
+    <ClInclude Include="rapid.h" />
+  </ItemGroup>
+</Project>
