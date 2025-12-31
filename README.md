@@ -66,7 +66,7 @@
 
 ## 在线示例
 
-[MapGIS Client for JavaScript](http://develop.smaryun.com:8899/#/gallery/cesium)
+[MapGIS Client for JavaScript](http://webclient.smaryun.com/#/example-gallery/cesium)
 
 ## 工具
 
